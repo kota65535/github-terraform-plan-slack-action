@@ -1,0 +1,38 @@
+name: "Terraform Plan Notification by Slack"
+description: "Notify Terraform plan result to Slack"
+branding:
+  icon: "cloud"
+  color: "purple"
+inputs:
+  plan-job-name:
+    description: "Plan job name"
+    required: true
+  plan-step-name:
+    description: "Name of the job step that executed Terraform Plan"
+    required: true
+  workspace:
+    description: "Workspace name"
+    required: false
+  channel:
+    description: "Slack Channel ID or name"
+    required: true
+  github-token:
+    description: "GitHub token"
+    required: false
+  slack-bot-token:
+    description: "Slack bot token"
+    required: false
+outputs:
+  outside:
+    description: "Changes outside section"
+  action:
+    description: "Resource actions section"
+  output:
+    description: "Output section"
+  warning:
+    description: "Warning section"
+  summary:
+    description: "Summary section"
+runs:
+  using: "node16"
+  main: "dist/index.js"

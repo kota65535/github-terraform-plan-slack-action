@@ -1,6 +1,6 @@
 const GOOD = {
   color: '#2EB886',
-  icon: ':construction:'
+  icon: ':white_check_mark:'
 };
 const WARNING = {
   color: '#DAA038',
@@ -19,7 +19,7 @@ const createMessage = (plan, env, planUrl) => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `${props.icon} Succeeded Terraform plan${env ? ` for *\`${env}\`*` : ''}`
+          text: `:construction: Succeeded Terraform Plan${env ? ` for *\`${env}\`*` : ''}`
         }
       }
     ],
@@ -31,7 +31,7 @@ const createMessage = (plan, env, planUrl) => {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `*${plan.summary.str}*`
+              text: `${props.icon} *${plan.summary.str}*`
             }
           }
         ]

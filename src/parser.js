@@ -21,10 +21,10 @@ const getResourceActionSection = (inputLines) => {
     /^Plan:/);
 
   const patterns = {
-    create: /^ {2}# (?<name>.*) will be created$/,
-    update: /^ {2}# (?<name>.*) will be updated in-place$/,
-    replace: /^ {2}# (?<name>.*) ((is tainted, so )?must be replaced|will be replaced, as requested)$/,
-    destroy: /^ {2}# (?<name>.*) will be destroyed$/
+    create: /^ {2}# (?<name>.*?) will be created$/,
+    update: /^ {2}# (?<name>.*?) will be updated in-place$/,
+    replace: /^ {2}# (?<name>.*?) ((is tainted, so )?must be replaced|will be replaced, as requested)$/,
+    destroy: /^ {2}# (?<name>.*?) will be destroyed$/
   };
 
   let inside = null;

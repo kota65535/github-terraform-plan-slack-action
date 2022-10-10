@@ -15253,6 +15253,7 @@ const parse = (rawLines) => {
 
   // Handle empty summary string when we have output changes but no resource changes
   if (summary.str === '' && output.sections.length > 0) {
+    summary.offset = output.offset
     summary.str = `Changes to Outputs: ${output.sections.length}`;
   }
 

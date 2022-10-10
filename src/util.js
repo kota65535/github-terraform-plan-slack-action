@@ -40,7 +40,7 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   };
 };
 
-const findSections = (lines, beginPattern, endPattern) => {
+const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
   let ret = [];
   let groups = {};
   let str = null;
@@ -53,6 +53,15 @@ const findSections = (lines, beginPattern, endPattern) => {
           ...groups,
           str
         });
+        if (includeEndPattern) {
+          const m = line.match(beginPattern);
+          if (m) {
+            groups = m.groups;
+            str = line + '\n';
+            inside = true;
+            continue
+          }
+        }
         groups = {};
         str = null;
         inside = false;

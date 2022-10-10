@@ -15095,6 +15095,7 @@ const main = async () => {
   core.setOutput('output', jsonString(result.output));
   core.setOutput('warning', jsonString(result.warning));
   core.setOutput('summary', jsonString(result.summary));
+  core.setOutput('should-apply', result.shouldApply);
 };
 
 module.exports = main;
@@ -15176,7 +15177,7 @@ const getResourceActionSection = (inputLines) => {
   }
   return {
     offset,
-    sections: sections
+    sections
   };
 };
 
@@ -15188,6 +15189,11 @@ const getOutputChangeSection = (inputLines) => {
   const str = lines.join('\n');
   return {
     offset,
+    sections: findSections(lines,
+      /^\s{2}[+~-]\s(?<name>.*?)\s=/,
+      /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/,
+      true
+    ),
     str
   };
 };
@@ -15214,25 +15220,20 @@ const getSummarySection = (inputLines) => {
         add: parseInt(match[1]),
         change: parseInt(match[2]),
         destroy: parseInt(match[3]),
-        str: match[0],
-        hasChanges: true
+        str: match[0]
       };
     }
   }
   {
     let { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
-    if (match) {
-      return {
-        offset,
-        add: [],
-        change: [],
-        destroy: [],
-        str: match[0],
-        hasChanges: false
-      };
-    }
+    return {
+      offset,
+      add: [],
+      change: [],
+      destroy: [],
+      str: match ? match[0] : ''
+    };
   }
-  throw new Error('Failed to get summary section');
 };
 
 const parse = (rawLines) => {
@@ -15248,12 +15249,21 @@ const parse = (rawLines) => {
   const warning = getWarningSection(lines);
   const summary = getSummarySection(lines);
 
+  const shouldApply = summary.add.length > 0 || summary.change.length > 0 || summary.destroy.length > 0 || output.sections.length > 0;
+
+  // Handle empty summary string when we have output changes but no resource changes
+  if (summary.str === '' && output.sections.length > 0) {
+    summary.offset = output.offset
+    summary.str = `Output Changes: ${output.sections.length}`;
+  }
+
   return {
     outside,
     action,
     output,
     warning,
-    summary
+    summary,
+    shouldApply
   };
 };
 
@@ -15445,7 +15455,7 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   };
 };
 
-const findSections = (lines, beginPattern, endPattern) => {
+const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
   let ret = [];
   let groups = {};
   let str = null;
@@ -15458,6 +15468,15 @@ const findSections = (lines, beginPattern, endPattern) => {
           ...groups,
           str
         });
+        if (includeEndPattern) {
+          const m = line.match(beginPattern);
+          if (m) {
+            groups = m.groups;
+            str = line + '\n';
+            inside = true;
+            continue
+          }
+        }
         groups = {};
         str = null;
         inside = false;

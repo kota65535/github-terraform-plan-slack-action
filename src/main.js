@@ -43,6 +43,7 @@ const main = async () => {
   core.setOutput('output', jsonString(result.output));
   core.setOutput('warning', jsonString(result.warning));
   core.setOutput('summary', jsonString(result.summary));
+  core.setOutput('should-apply', result.shouldApply);
 };
 
 module.exports = main;

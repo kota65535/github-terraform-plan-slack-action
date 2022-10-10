@@ -82,7 +82,7 @@ const getOutputChangeSection = (inputLines) => {
   return {
     offset,
     sections: findSections(lines,
-      /\s{2}[+~-]\s(?<name>.*?)\s=/,
+      /^\s{2}[+~-]\s(?<name>.*?)\s=/,
       /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/,
       true
     ),

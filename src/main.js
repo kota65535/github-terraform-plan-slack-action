@@ -3,7 +3,7 @@ const { context } = require('@actions/github');
 const parse = require('./parser');
 const send = require('./slack');
 const { jsonString } = require('./util');
-const { getStepLogs, getPlanStepUrl, initOctokit } = require('./job');
+const { getStepLogs, getPlanStepUrl, initOctokit } = require('./github');
 const createMessage = require('./slack_message');
 
 const main = async () => {

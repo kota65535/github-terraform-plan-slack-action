@@ -1,7 +1,7 @@
 const core = require("@actions/core");
 const { context } = require("@actions/github");
 const parse = require("./parser");
-const send = require("./slack");
+const { sendByBotToken, sendByWebhookUrl } = require("./slack");
 const { jsonString } = require("./util");
 const { getStepLogs, getPlanStepUrl, initOctokit } = require("./github");
 const createMessage = require("./slack_message");
@@ -11,13 +11,20 @@ const main = async () => {
   const stepName = core.getInput("plan-step").trim();
   const workspace = core.getInput("workspace").trim();
   const channel = core.getInput("channel").trim();
-  const githubToken = core.getInput("github-token").trim();
+  let githubToken = core.getInput("github-token").trim();
+  const defaultGithubToken = core.getInput("default-github-token").trim();
   let slackBotToken = core.getInput("slack-bot-token").trim();
+  let slackWebhookUrl = core.getInput("slack-webhook-url").trim();
 
-  // slack bot token can be also given via env
+  githubToken = githubToken || process.env.GITHUB_TOKEN || defaultGithubToken;
+  if (!githubToken) {
+    throw new Error("No GitHub token provided");
+  }
+
   slackBotToken = slackBotToken || process.env.SLACK_BOT_TOKEN;
-  if (slackBotToken === "") {
-    throw new Error("Need to provide one of slack-bot-token or SLACK_BOT_TOKEN environment variable");
+  slackWebhookUrl = slackWebhookUrl || process.env.SLACK_WEBHOOK_URL;
+  if (!(slackBotToken && channel) && !slackWebhookUrl) {
+    throw new Error("Need to specify the Slack bot token and the channel name, or the webhook URL.");
   }
 
   initOctokit(githubToken);
@@ -30,7 +37,12 @@ const main = async () => {
 
   const message = createMessage(result, workspace, planUrl);
 
-  await send(channel, slackBotToken, message);
+  if (slackBotToken) {
+    await sendByBotToken(slackBotToken, channel, message);
+  }
+  if (slackWebhookUrl) {
+    await sendByWebhookUrl(slackWebhookUrl, message);
+  }
 
   core.setOutput("outside", jsonString(result.output));
   core.setOutput("action", jsonString(result.action));

@@ -1,5 +1,5 @@
-name: "Terraform Plan Notification for PR"
-description: "Add Terraform plan result as PR comment"
+name: "Terraform Plan Notification by Slack"
+description: "Notify Terraform plan result to Slack"
 branding:
   icon: "cloud"
   color: "purple"
@@ -11,10 +11,23 @@ inputs:
     description: "Step name where `terraform plan` has been run"
     required: true
   workspace:
-    description: "Terraform workspace name"
+    description: "Workspace name"
+    required: false
+  channel:
+    description: "Slack Channel ID or name"
+    required: false
   github-token:
     description: "GitHub token"
+    required: false
+  default-github-token:
+    description: "Default gitHub token"
     default: ${{ github.token }}
+  slack-bot-token:
+    description: "Slack bot token"
+    required: false
+  slack-webhook-url:
+    description: "Slack webhook URL"
+    required: false
 outputs:
   outside:
     description: "Changes outside section"

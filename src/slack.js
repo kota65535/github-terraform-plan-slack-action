@@ -3,7 +3,7 @@ const axios = require("axios");
 
 const SLACK_API_URL = "https://slack.com/api/chat.postMessage";
 
-const send = async (channel, token, message) => {
+const sendByBotToken = async (token, channel, message) => {
   message.channel = channel;
 
   core.debug(message);
@@ -20,4 +20,15 @@ const send = async (channel, token, message) => {
   return res.data;
 };
 
-module.exports = send;
+const sendByWebhookUrl = async (url, message) => {
+  const res = await axios.post(url, message, {});
+  if (!(res.status === 200 && res.data && res.data.ok)) {
+    throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
+  }
+  return res.data;
+};
+
+module.exports = {
+  sendByBotToken,
+  sendByWebhookUrl,
+};

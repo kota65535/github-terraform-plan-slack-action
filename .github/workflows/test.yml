@@ -54,15 +54,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Notify terraform plan result as PR comment for dev
+      - name: Notify terraform plan result to slack for dev
         uses: ./
         with:
           plan-job: plan
-          plan-step: Run terraform plan for dev
+          plan-step: Run terraform plan
           workspace: dev
-      - name: Notify terraform plan result as PR comment for prod
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Notify terraform plan result to slack for prod
         uses: ./
         with:
           plan-job: plan
           plan-step: Run terraform plan for prod
           workspace: prod
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}

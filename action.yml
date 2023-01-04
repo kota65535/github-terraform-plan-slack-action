@@ -12,22 +12,17 @@ inputs:
     required: true
   workspace:
     description: "Workspace name"
-    required: false
   channel:
     description: "Slack Channel ID or name"
-    required: false
   github-token:
     description: "GitHub token"
-    required: false
   default-github-token:
     description: "Default gitHub token"
     default: ${{ github.token }}
   slack-bot-token:
     description: "Slack bot token"
-    required: false
   slack-webhook-url:
     description: "Slack webhook URL"
-    required: false
 outputs:
   outside:
     description: "Changes outside section"

@@ -18,9 +18,9 @@ GitHub Action for sending terraform plan result to a Slack channel.
 | `github-token`      | GitHub token                                  | No       | `${{ env.GITHUB_TOKEN }}` or `${{ github.token }}` | 
 | `slack-bot-token`   | Slack bot token                               | No [^1]  | `${{ env.SLACK_BOT_TOKEN }}`                       | 
 | `channel`           | Slack channel name                            | No [^1]  | N/A                                                | 
-| `slack-webhook-url` | Slack webhook URL                             | No (1)   | `${{ env.SLACK_WEBHOOK_URL }}`                     | 
+| `slack-webhook-url` | Slack webhook URL                             | No [^1]  | `${{ env.SLACK_WEBHOOK_URL }}`                     | 
 
-[^1]: Either `slack-bot-token` or `slack-webhook-url` are required.
+[^1]: Need to specify both `slack-bot-token` and `channel`, or `slack-webhook-url`.
 
 ## Usage
 

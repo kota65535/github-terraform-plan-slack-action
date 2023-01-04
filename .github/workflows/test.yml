@@ -68,5 +68,4 @@ jobs:
           plan-job: plan
           plan-step: Run terraform plan for prod
           workspace: prod
-          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          channel: sample-basic-ci
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

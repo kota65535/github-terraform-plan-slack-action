@@ -23146,22 +23146,27 @@ module.exports = parse;
 /***/ 9393:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const core = __webpack_require__(2186);
 const axios = __webpack_require__(6545);
 
 const SLACK_API_URL = "https://slack.com/api/chat.postMessage";
 
 const sendByBotToken = async (token, channel, message) => {
   message.channel = channel;
-
-  core.debug(message);
-
-  const res = await axios.post(SLACK_API_URL, message, {
-    headers: {
-      "Content-Type": "application/json; charset=UTF-8",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  let res;
+  try {
+    res = await axios.post(SLACK_API_URL, message, {
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (e) {
+    if (e.response) {
+      throw new Error(`failed to send to Slack: status=${e.response.status}, data=${JSON.stringify(e.response.data)}`);
+    } else {
+      throw new Error(`failed to send to Slack: no response.`);
+    }
+  }
   if (!(res.status === 200 && res.data && res.data.ok)) {
     throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
   }
@@ -23169,8 +23174,17 @@ const sendByBotToken = async (token, channel, message) => {
 };
 
 const sendByWebhookUrl = async (url, message) => {
-  const res = await axios.post(url, message, {});
-  if (!(res.status === 200 && res.data && res.data.ok)) {
+  let res;
+  try {
+    res = await axios.post(url, message);
+  } catch (e) {
+    if (e.response) {
+      throw new Error(`failed to send to Slack: status=${e.response.status}, data=${JSON.stringify(e.response.data)}`);
+    } else {
+      throw new Error(`failed to send to Slack: no response`);
+    }
+  }
+  if (!(res.status === 200 && res.data === "ok")) {
     throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
   }
   return res.data;

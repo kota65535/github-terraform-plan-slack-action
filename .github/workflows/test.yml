@@ -61,6 +61,7 @@ jobs:
           plan-step: Run terraform plan
           workspace: dev
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel: sample-basic-ci
       - name: Notify terraform plan result to slack for prod
         uses: ./
         with:
@@ -68,3 +69,4 @@ jobs:
           plan-step: Run terraform plan for prod
           workspace: prod
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel: sample-basic-ci

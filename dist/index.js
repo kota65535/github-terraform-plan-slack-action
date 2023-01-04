@@ -416,23 +416,6 @@ function getIDToken(aud) {
     });
 }
 exports.getIDToken = getIDToken;
-/**
- * Summary exports
- */
-var summary_1 = __webpack_require__(1327);
-Object.defineProperty(exports, "summary", ({ enumerable: true, get: function () { return summary_1.summary; } }));
-/**
- * @deprecated use core.summary
- */
-var summary_2 = __webpack_require__(1327);
-Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return summary_2.markdownSummary; } }));
-/**
- * Path exports
- */
-var path_utils_1 = __webpack_require__(2981);
-Object.defineProperty(exports, "toPosixPath", ({ enumerable: true, get: function () { return path_utils_1.toPosixPath; } }));
-Object.defineProperty(exports, "toWin32Path", ({ enumerable: true, get: function () { return path_utils_1.toWin32Path; } }));
-Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: function () { return path_utils_1.toPlatformPath; } }));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -502,8 +485,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OidcClient = void 0;
-const http_client_1 = __webpack_require__(6255);
-const auth_1 = __webpack_require__(5526);
+const http_client_1 = __webpack_require__(9925);
+const auth_1 = __webpack_require__(3702);
 const core_1 = __webpack_require__(2186);
 class OidcClient {
     static createHttpClient(allowRetry = true, maxRetry = 10) {
@@ -567,361 +550,6 @@ class OidcClient {
 }
 exports.OidcClient = OidcClient;
 //# sourceMappingURL=oidc-utils.js.map
-
-/***/ }),
-
-/***/ 2981:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = void 0;
-const path = __importStar(__webpack_require__(5622));
-/**
- * toPosixPath converts the given path to the posix form. On Windows, \\ will be
- * replaced with /.
- *
- * @param pth. Path to transform.
- * @return string Posix path.
- */
-function toPosixPath(pth) {
-    return pth.replace(/[\\]/g, '/');
-}
-exports.toPosixPath = toPosixPath;
-/**
- * toWin32Path converts the given path to the win32 form. On Linux, / will be
- * replaced with \\.
- *
- * @param pth. Path to transform.
- * @return string Win32 path.
- */
-function toWin32Path(pth) {
-    return pth.replace(/[/]/g, '\\');
-}
-exports.toWin32Path = toWin32Path;
-/**
- * toPlatformPath converts the given path to a platform-specific path. It does
- * this by replacing instances of / and \ with the platform-specific path
- * separator.
- *
- * @param pth The path to platformize.
- * @return string The platform-specific path.
- */
-function toPlatformPath(pth) {
-    return pth.replace(/[/\\]/g, path.sep);
-}
-exports.toPlatformPath = toPlatformPath;
-//# sourceMappingURL=path-utils.js.map
-
-/***/ }),
-
-/***/ 1327:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
-const os_1 = __webpack_require__(2087);
-const fs_1 = __webpack_require__(5747);
-const { access, appendFile, writeFile } = fs_1.promises;
-exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
-exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
-class Summary {
-    constructor() {
-        this._buffer = '';
-    }
-    /**
-     * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
-     * Also checks r/w permissions.
-     *
-     * @returns step summary file path
-     */
-    filePath() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this._filePath) {
-                return this._filePath;
-            }
-            const pathFromEnv = process.env[exports.SUMMARY_ENV_VAR];
-            if (!pathFromEnv) {
-                throw new Error(`Unable to find environment variable for $${exports.SUMMARY_ENV_VAR}. Check if your runtime environment supports job summaries.`);
-            }
-            try {
-                yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
-            }
-            catch (_a) {
-                throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
-            }
-            this._filePath = pathFromEnv;
-            return this._filePath;
-        });
-    }
-    /**
-     * Wraps content in an HTML tag, adding any HTML attributes
-     *
-     * @param {string} tag HTML tag to wrap
-     * @param {string | null} content content within the tag
-     * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
-     *
-     * @returns {string} content wrapped in HTML element
-     */
-    wrap(tag, content, attrs = {}) {
-        const htmlAttrs = Object.entries(attrs)
-            .map(([key, value]) => ` ${key}="${value}"`)
-            .join('');
-        if (!content) {
-            return `<${tag}${htmlAttrs}>`;
-        }
-        return `<${tag}${htmlAttrs}>${content}</${tag}>`;
-    }
-    /**
-     * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
-     *
-     * @param {SummaryWriteOptions} [options] (optional) options for write operation
-     *
-     * @returns {Promise<Summary>} summary instance
-     */
-    write(options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
-            const filePath = yield this.filePath();
-            const writeFunc = overwrite ? writeFile : appendFile;
-            yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
-            return this.emptyBuffer();
-        });
-    }
-    /**
-     * Clears the summary buffer and wipes the summary file
-     *
-     * @returns {Summary} summary instance
-     */
-    clear() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.emptyBuffer().write({ overwrite: true });
-        });
-    }
-    /**
-     * Returns the current summary buffer as a string
-     *
-     * @returns {string} string of summary buffer
-     */
-    stringify() {
-        return this._buffer;
-    }
-    /**
-     * If the summary buffer is empty
-     *
-     * @returns {boolen} true if the buffer is empty
-     */
-    isEmptyBuffer() {
-        return this._buffer.length === 0;
-    }
-    /**
-     * Resets the summary buffer without writing to summary file
-     *
-     * @returns {Summary} summary instance
-     */
-    emptyBuffer() {
-        this._buffer = '';
-        return this;
-    }
-    /**
-     * Adds raw text to the summary buffer
-     *
-     * @param {string} text content to add
-     * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
-     *
-     * @returns {Summary} summary instance
-     */
-    addRaw(text, addEOL = false) {
-        this._buffer += text;
-        return addEOL ? this.addEOL() : this;
-    }
-    /**
-     * Adds the operating system-specific end-of-line marker to the buffer
-     *
-     * @returns {Summary} summary instance
-     */
-    addEOL() {
-        return this.addRaw(os_1.EOL);
-    }
-    /**
-     * Adds an HTML codeblock to the summary buffer
-     *
-     * @param {string} code content to render within fenced code block
-     * @param {string} lang (optional) language to syntax highlight code
-     *
-     * @returns {Summary} summary instance
-     */
-    addCodeBlock(code, lang) {
-        const attrs = Object.assign({}, (lang && { lang }));
-        const element = this.wrap('pre', this.wrap('code', code), attrs);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML list to the summary buffer
-     *
-     * @param {string[]} items list of items to render
-     * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
-     *
-     * @returns {Summary} summary instance
-     */
-    addList(items, ordered = false) {
-        const tag = ordered ? 'ol' : 'ul';
-        const listItems = items.map(item => this.wrap('li', item)).join('');
-        const element = this.wrap(tag, listItems);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML table to the summary buffer
-     *
-     * @param {SummaryTableCell[]} rows table rows
-     *
-     * @returns {Summary} summary instance
-     */
-    addTable(rows) {
-        const tableBody = rows
-            .map(row => {
-            const cells = row
-                .map(cell => {
-                if (typeof cell === 'string') {
-                    return this.wrap('td', cell);
-                }
-                const { header, data, colspan, rowspan } = cell;
-                const tag = header ? 'th' : 'td';
-                const attrs = Object.assign(Object.assign({}, (colspan && { colspan })), (rowspan && { rowspan }));
-                return this.wrap(tag, data, attrs);
-            })
-                .join('');
-            return this.wrap('tr', cells);
-        })
-            .join('');
-        const element = this.wrap('table', tableBody);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds a collapsable HTML details element to the summary buffer
-     *
-     * @param {string} label text for the closed state
-     * @param {string} content collapsable content
-     *
-     * @returns {Summary} summary instance
-     */
-    addDetails(label, content) {
-        const element = this.wrap('details', this.wrap('summary', label) + content);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML image tag to the summary buffer
-     *
-     * @param {string} src path to the image you to embed
-     * @param {string} alt text description of the image
-     * @param {SummaryImageOptions} options (optional) addition image attributes
-     *
-     * @returns {Summary} summary instance
-     */
-    addImage(src, alt, options) {
-        const { width, height } = options || {};
-        const attrs = Object.assign(Object.assign({}, (width && { width })), (height && { height }));
-        const element = this.wrap('img', null, Object.assign({ src, alt }, attrs));
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML section heading element
-     *
-     * @param {string} text heading text
-     * @param {number | string} [level=1] (optional) the heading level, default: 1
-     *
-     * @returns {Summary} summary instance
-     */
-    addHeading(text, level) {
-        const tag = `h${level}`;
-        const allowedTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)
-            ? tag
-            : 'h1';
-        const element = this.wrap(allowedTag, text);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML thematic break (<hr>) to the summary buffer
-     *
-     * @returns {Summary} summary instance
-     */
-    addSeparator() {
-        const element = this.wrap('hr', null);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML line break (<br>) to the summary buffer
-     *
-     * @returns {Summary} summary instance
-     */
-    addBreak() {
-        const element = this.wrap('br', null);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML blockquote to the summary buffer
-     *
-     * @param {string} text quote text
-     * @param {string} cite (optional) citation url
-     *
-     * @returns {Summary} summary instance
-     */
-    addQuote(text, cite) {
-        const attrs = Object.assign({}, (cite && { cite }));
-        const element = this.wrap('blockquote', text, attrs);
-        return this.addRaw(element).addEOL();
-    }
-    /**
-     * Adds an HTML anchor tag to the summary buffer
-     *
-     * @param {string} text link text/content
-     * @param {string} href hyperlink
-     *
-     * @returns {Summary} summary instance
-     */
-    addLink(text, href) {
-        const element = this.wrap('a', text, { href });
-        return this.addRaw(element).addEOL();
-    }
-}
-const _summary = new Summary();
-/**
- * @deprecated use `core.summary`
- */
-exports.markdownSummary = _summary;
-exports.summary = _summary;
-//# sourceMappingURL=summary.js.map
 
 /***/ }),
 
@@ -1102,7 +730,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getApiBaseUrl = exports.getProxyAgent = exports.getAuthString = void 0;
-const httpClient = __importStar(__webpack_require__(6255));
+const httpClient = __importStar(__webpack_require__(9925));
 function getAuthString(token, options) {
     if (!token && !options.auth) {
         throw new Error('Parameter token or opts.auth is required');
@@ -1187,41 +815,28 @@ exports.getOctokitOptions = getOctokitOptions;
 
 /***/ }),
 
-/***/ 5526:
-/***/ (function(__unused_webpack_module, exports) {
+/***/ 3702:
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PersonalAccessTokenCredentialHandler = exports.BearerCredentialHandler = exports.BasicCredentialHandler = void 0;
 class BasicCredentialHandler {
     constructor(username, password) {
         this.username = username;
         this.password = password;
     }
     prepareRequest(options) {
-        if (!options.headers) {
-            throw Error('The request has no headers');
-        }
-        options.headers['Authorization'] = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString('base64')}`;
+        options.headers['Authorization'] =
+            'Basic ' +
+                Buffer.from(this.username + ':' + this.password).toString('base64');
     }
     // This handler cannot handle 401
-    canHandleAuthentication() {
+    canHandleAuthentication(response) {
         return false;
     }
-    handleAuthentication() {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('not implemented');
-        });
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
     }
 }
 exports.BasicCredentialHandler = BasicCredentialHandler;
@@ -1232,19 +847,14 @@ class BearerCredentialHandler {
     // currently implements pre-authorization
     // TODO: support preAuth = false where it hooks on 401
     prepareRequest(options) {
-        if (!options.headers) {
-            throw Error('The request has no headers');
-        }
-        options.headers['Authorization'] = `Bearer ${this.token}`;
+        options.headers['Authorization'] = 'Bearer ' + this.token;
     }
     // This handler cannot handle 401
-    canHandleAuthentication() {
+    canHandleAuthentication(response) {
         return false;
     }
-    handleAuthentication() {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('not implemented');
-        });
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
     }
 }
 exports.BearerCredentialHandler = BearerCredentialHandler;
@@ -1255,66 +865,32 @@ class PersonalAccessTokenCredentialHandler {
     // currently implements pre-authorization
     // TODO: support preAuth = false where it hooks on 401
     prepareRequest(options) {
-        if (!options.headers) {
-            throw Error('The request has no headers');
-        }
-        options.headers['Authorization'] = `Basic ${Buffer.from(`PAT:${this.token}`).toString('base64')}`;
+        options.headers['Authorization'] =
+            'Basic ' + Buffer.from('PAT:' + this.token).toString('base64');
     }
     // This handler cannot handle 401
-    canHandleAuthentication() {
+    canHandleAuthentication(response) {
         return false;
     }
-    handleAuthentication() {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('not implemented');
-        });
+    handleAuthentication(httpClient, requestInfo, objs) {
+        return null;
     }
 }
 exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
-//# sourceMappingURL=auth.js.map
+
 
 /***/ }),
 
-/***/ 6255:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ 9925:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
-const http = __importStar(__webpack_require__(8605));
-const https = __importStar(__webpack_require__(7211));
-const pm = __importStar(__webpack_require__(9835));
-const tunnel = __importStar(__webpack_require__(4294));
+const http = __webpack_require__(8605);
+const https = __webpack_require__(7211);
+const pm = __webpack_require__(6443);
+let tunnel;
 var HttpCodes;
 (function (HttpCodes) {
     HttpCodes[HttpCodes["OK"] = 200] = "OK";
@@ -1359,7 +935,7 @@ var MediaTypes;
  * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
  */
 function getProxyUrl(serverUrl) {
-    const proxyUrl = pm.getProxyUrl(new URL(serverUrl));
+    let proxyUrl = pm.getProxyUrl(new URL(serverUrl));
     return proxyUrl ? proxyUrl.href : '';
 }
 exports.getProxyUrl = getProxyUrl;
@@ -1392,22 +968,20 @@ class HttpClientResponse {
         this.message = message;
     }
     readBody() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-                let output = Buffer.alloc(0);
-                this.message.on('data', (chunk) => {
-                    output = Buffer.concat([output, chunk]);
-                });
-                this.message.on('end', () => {
-                    resolve(output.toString());
-                });
-            }));
+        return new Promise(async (resolve, reject) => {
+            let output = Buffer.alloc(0);
+            this.message.on('data', (chunk) => {
+                output = Buffer.concat([output, chunk]);
+            });
+            this.message.on('end', () => {
+                resolve(output.toString());
+            });
         });
     }
 }
 exports.HttpClientResponse = HttpClientResponse;
 function isHttps(requestUrl) {
-    const parsedUrl = new URL(requestUrl);
+    let parsedUrl = new URL(requestUrl);
     return parsedUrl.protocol === 'https:';
 }
 exports.isHttps = isHttps;
@@ -1450,169 +1024,141 @@ class HttpClient {
         }
     }
     options(requestUrl, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('OPTIONS', requestUrl, null, additionalHeaders || {});
-        });
+        return this.request('OPTIONS', requestUrl, null, additionalHeaders || {});
     }
     get(requestUrl, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('GET', requestUrl, null, additionalHeaders || {});
-        });
+        return this.request('GET', requestUrl, null, additionalHeaders || {});
     }
     del(requestUrl, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('DELETE', requestUrl, null, additionalHeaders || {});
-        });
+        return this.request('DELETE', requestUrl, null, additionalHeaders || {});
     }
     post(requestUrl, data, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('POST', requestUrl, data, additionalHeaders || {});
-        });
+        return this.request('POST', requestUrl, data, additionalHeaders || {});
     }
     patch(requestUrl, data, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('PATCH', requestUrl, data, additionalHeaders || {});
-        });
+        return this.request('PATCH', requestUrl, data, additionalHeaders || {});
     }
     put(requestUrl, data, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('PUT', requestUrl, data, additionalHeaders || {});
-        });
+        return this.request('PUT', requestUrl, data, additionalHeaders || {});
     }
     head(requestUrl, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request('HEAD', requestUrl, null, additionalHeaders || {});
-        });
+        return this.request('HEAD', requestUrl, null, additionalHeaders || {});
     }
     sendStream(verb, requestUrl, stream, additionalHeaders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.request(verb, requestUrl, stream, additionalHeaders);
-        });
+        return this.request(verb, requestUrl, stream, additionalHeaders);
     }
     /**
      * Gets a typed object from an endpoint
      * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
      */
-    getJson(requestUrl, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            const res = yield this.get(requestUrl, additionalHeaders);
-            return this._processResponse(res, this.requestOptions);
-        });
+    async getJson(requestUrl, additionalHeaders = {}) {
+        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+        let res = await this.get(requestUrl, additionalHeaders);
+        return this._processResponse(res, this.requestOptions);
     }
-    postJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = JSON.stringify(obj, null, 2);
-            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-            const res = yield this.post(requestUrl, data, additionalHeaders);
-            return this._processResponse(res, this.requestOptions);
-        });
+    async postJson(requestUrl, obj, additionalHeaders = {}) {
+        let data = JSON.stringify(obj, null, 2);
+        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+        let res = await this.post(requestUrl, data, additionalHeaders);
+        return this._processResponse(res, this.requestOptions);
     }
-    putJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = JSON.stringify(obj, null, 2);
-            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-            const res = yield this.put(requestUrl, data, additionalHeaders);
-            return this._processResponse(res, this.requestOptions);
-        });
+    async putJson(requestUrl, obj, additionalHeaders = {}) {
+        let data = JSON.stringify(obj, null, 2);
+        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+        let res = await this.put(requestUrl, data, additionalHeaders);
+        return this._processResponse(res, this.requestOptions);
     }
-    patchJson(requestUrl, obj, additionalHeaders = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = JSON.stringify(obj, null, 2);
-            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
-            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
-            const res = yield this.patch(requestUrl, data, additionalHeaders);
-            return this._processResponse(res, this.requestOptions);
-        });
+    async patchJson(requestUrl, obj, additionalHeaders = {}) {
+        let data = JSON.stringify(obj, null, 2);
+        additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+        additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+        let res = await this.patch(requestUrl, data, additionalHeaders);
+        return this._processResponse(res, this.requestOptions);
     }
     /**
      * Makes a raw http request.
      * All other methods such as get, post, patch, and request ultimately call this.
      * Prefer get, del, post and patch
      */
-    request(verb, requestUrl, data, headers) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this._disposed) {
-                throw new Error('Client has already been disposed.');
-            }
-            const parsedUrl = new URL(requestUrl);
-            let info = this._prepareRequest(verb, parsedUrl, headers);
-            // Only perform retries on reads since writes may not be idempotent.
-            const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb)
-                ? this._maxRetries + 1
-                : 1;
-            let numTries = 0;
-            let response;
-            do {
-                response = yield this.requestRaw(info, data);
-                // Check if it's an authentication challenge
-                if (response &&
-                    response.message &&
-                    response.message.statusCode === HttpCodes.Unauthorized) {
-                    let authenticationHandler;
-                    for (const handler of this.handlers) {
-                        if (handler.canHandleAuthentication(response)) {
-                            authenticationHandler = handler;
-                            break;
-                        }
-                    }
-                    if (authenticationHandler) {
-                        return authenticationHandler.handleAuthentication(this, info, data);
-                    }
-                    else {
-                        // We have received an unauthorized response but have no handlers to handle it.
-                        // Let the response return to the caller.
-                        return response;
-                    }
-                }
-                let redirectsRemaining = this._maxRedirects;
-                while (response.message.statusCode &&
-                    HttpRedirectCodes.includes(response.message.statusCode) &&
-                    this._allowRedirects &&
-                    redirectsRemaining > 0) {
-                    const redirectUrl = response.message.headers['location'];
-                    if (!redirectUrl) {
-                        // if there's no location to redirect to, we won't
+    async request(verb, requestUrl, data, headers) {
+        if (this._disposed) {
+            throw new Error('Client has already been disposed.');
+        }
+        let parsedUrl = new URL(requestUrl);
+        let info = this._prepareRequest(verb, parsedUrl, headers);
+        // Only perform retries on reads since writes may not be idempotent.
+        let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1
+            ? this._maxRetries + 1
+            : 1;
+        let numTries = 0;
+        let response;
+        while (numTries < maxTries) {
+            response = await this.requestRaw(info, data);
+            // Check if it's an authentication challenge
+            if (response &&
+                response.message &&
+                response.message.statusCode === HttpCodes.Unauthorized) {
+                let authenticationHandler;
+                for (let i = 0; i < this.handlers.length; i++) {
+                    if (this.handlers[i].canHandleAuthentication(response)) {
+                        authenticationHandler = this.handlers[i];
                         break;
                     }
-                    const parsedRedirectUrl = new URL(redirectUrl);
-                    if (parsedUrl.protocol === 'https:' &&
-                        parsedUrl.protocol !== parsedRedirectUrl.protocol &&
-                        !this._allowRedirectDowngrade) {
-                        throw new Error('Redirect from HTTPS to HTTP protocol. This downgrade is not allowed for security reasons. If you want to allow this behavior, set the allowRedirectDowngrade option to true.');
-                    }
-                    // we need to finish reading the response before reassigning response
-                    // which will leak the open socket.
-                    yield response.readBody();
-                    // strip authorization header if redirected to a different hostname
-                    if (parsedRedirectUrl.hostname !== parsedUrl.hostname) {
-                        for (const header in headers) {
-                            // header names are case insensitive
-                            if (header.toLowerCase() === 'authorization') {
-                                delete headers[header];
-                            }
-                        }
-                    }
-                    // let's make the request with the new redirectUrl
-                    info = this._prepareRequest(verb, parsedRedirectUrl, headers);
-                    response = yield this.requestRaw(info, data);
-                    redirectsRemaining--;
                 }
-                if (!response.message.statusCode ||
-                    !HttpResponseRetryCodes.includes(response.message.statusCode)) {
-                    // If not a retry code, return immediately instead of retrying
+                if (authenticationHandler) {
+                    return authenticationHandler.handleAuthentication(this, info, data);
+                }
+                else {
+                    // We have received an unauthorized response but have no handlers to handle it.
+                    // Let the response return to the caller.
                     return response;
                 }
-                numTries += 1;
-                if (numTries < maxTries) {
-                    yield response.readBody();
-                    yield this._performExponentialBackoff(numTries);
+            }
+            let redirectsRemaining = this._maxRedirects;
+            while (HttpRedirectCodes.indexOf(response.message.statusCode) != -1 &&
+                this._allowRedirects &&
+                redirectsRemaining > 0) {
+                const redirectUrl = response.message.headers['location'];
+                if (!redirectUrl) {
+                    // if there's no location to redirect to, we won't
+                    break;
                 }
-            } while (numTries < maxTries);
-            return response;
-        });
+                let parsedRedirectUrl = new URL(redirectUrl);
+                if (parsedUrl.protocol == 'https:' &&
+                    parsedUrl.protocol != parsedRedirectUrl.protocol &&
+                    !this._allowRedirectDowngrade) {
+                    throw new Error('Redirect from HTTPS to HTTP protocol. This downgrade is not allowed for security reasons. If you want to allow this behavior, set the allowRedirectDowngrade option to true.');
+                }
+                // we need to finish reading the response before reassigning response
+                // which will leak the open socket.
+                await response.readBody();
+                // strip authorization header if redirected to a different hostname
+                if (parsedRedirectUrl.hostname !== parsedUrl.hostname) {
+                    for (let header in headers) {
+                        // header names are case insensitive
+                        if (header.toLowerCase() === 'authorization') {
+                            delete headers[header];
+                        }
+                    }
+                }
+                // let's make the request with the new redirectUrl
+                info = this._prepareRequest(verb, parsedRedirectUrl, headers);
+                response = await this.requestRaw(info, data);
+                redirectsRemaining--;
+            }
+            if (HttpResponseRetryCodes.indexOf(response.message.statusCode) == -1) {
+                // If not a retry code, return immediately instead of retrying
+                return response;
+            }
+            numTries += 1;
+            if (numTries < maxTries) {
+                await response.readBody();
+                await this._performExponentialBackoff(numTries);
+            }
+        }
+        return response;
     }
     /**
      * Needs to be called if keepAlive is set to true in request options.
@@ -1629,22 +1175,14 @@ class HttpClient {
      * @param data
      */
     requestRaw(info, data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                function callbackForResult(err, res) {
-                    if (err) {
-                        reject(err);
-                    }
-                    else if (!res) {
-                        // If `err` is not passed, then `res` must be passed.
-                        reject(new Error('Unknown error'));
-                    }
-                    else {
-                        resolve(res);
-                    }
+        return new Promise((resolve, reject) => {
+            let callbackForResult = function (err, res) {
+                if (err) {
+                    reject(err);
                 }
-                this.requestRawWithCallback(info, data, callbackForResult);
-            });
+                resolve(res);
+            };
+            this.requestRawWithCallback(info, data, callbackForResult);
         });
     }
     /**
@@ -1654,24 +1192,21 @@ class HttpClient {
      * @param onResult
      */
     requestRawWithCallback(info, data, onResult) {
+        let socket;
         if (typeof data === 'string') {
-            if (!info.options.headers) {
-                info.options.headers = {};
-            }
             info.options.headers['Content-Length'] = Buffer.byteLength(data, 'utf8');
         }
         let callbackCalled = false;
-        function handleResult(err, res) {
+        let handleResult = (err, res) => {
             if (!callbackCalled) {
                 callbackCalled = true;
                 onResult(err, res);
             }
-        }
-        const req = info.httpModule.request(info.options, (msg) => {
-            const res = new HttpClientResponse(msg);
-            handleResult(undefined, res);
+        };
+        let req = info.httpModule.request(info.options, (msg) => {
+            let res = new HttpClientResponse(msg);
+            handleResult(null, res);
         });
-        let socket;
         req.on('socket', sock => {
             socket = sock;
         });
@@ -1680,12 +1215,12 @@ class HttpClient {
             if (socket) {
                 socket.end();
             }
-            handleResult(new Error(`Request timeout: ${info.options.path}`));
+            handleResult(new Error('Request timeout: ' + info.options.path), null);
         });
         req.on('error', function (err) {
             // err has statusCode property
             // res should have headers
-            handleResult(err);
+            handleResult(err, null);
         });
         if (data && typeof data === 'string') {
             req.write(data, 'utf8');
@@ -1706,7 +1241,7 @@ class HttpClient {
      * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
      */
     getAgent(serverUrl) {
-        const parsedUrl = new URL(serverUrl);
+        let parsedUrl = new URL(serverUrl);
         return this._getAgent(parsedUrl);
     }
     _prepareRequest(method, requestUrl, headers) {
@@ -1730,19 +1265,21 @@ class HttpClient {
         info.options.agent = this._getAgent(info.parsedUrl);
         // gives handlers an opportunity to participate
         if (this.handlers) {
-            for (const handler of this.handlers) {
+            this.handlers.forEach(handler => {
                 handler.prepareRequest(info.options);
-            }
+            });
         }
         return info;
     }
     _mergeHeaders(headers) {
+        const lowercaseKeys = obj => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
         if (this.requestOptions && this.requestOptions.headers) {
-            return Object.assign({}, lowercaseKeys(this.requestOptions.headers), lowercaseKeys(headers || {}));
+            return Object.assign({}, lowercaseKeys(this.requestOptions.headers), lowercaseKeys(headers));
         }
         return lowercaseKeys(headers || {});
     }
     _getExistingOrDefaultHeader(additionalHeaders, header, _default) {
+        const lowercaseKeys = obj => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
         let clientHeader;
         if (this.requestOptions && this.requestOptions.headers) {
             clientHeader = lowercaseKeys(this.requestOptions.headers)[header];
@@ -1751,8 +1288,8 @@ class HttpClient {
     }
     _getAgent(parsedUrl) {
         let agent;
-        const proxyUrl = pm.getProxyUrl(parsedUrl);
-        const useProxy = proxyUrl && proxyUrl.hostname;
+        let proxyUrl = pm.getProxyUrl(parsedUrl);
+        let useProxy = proxyUrl && proxyUrl.hostname;
         if (this._keepAlive && useProxy) {
             agent = this._proxyAgent;
         }
@@ -1760,22 +1297,29 @@ class HttpClient {
             agent = this._agent;
         }
         // if agent is already assigned use that agent.
-        if (agent) {
+        if (!!agent) {
             return agent;
         }
         const usingSsl = parsedUrl.protocol === 'https:';
         let maxSockets = 100;
-        if (this.requestOptions) {
+        if (!!this.requestOptions) {
             maxSockets = this.requestOptions.maxSockets || http.globalAgent.maxSockets;
         }
-        // This is `useProxy` again, but we need to check `proxyURl` directly for TypeScripts's flow analysis.
-        if (proxyUrl && proxyUrl.hostname) {
+        if (useProxy) {
+            // If using proxy, need tunnel
+            if (!tunnel) {
+                tunnel = __webpack_require__(4294);
+            }
             const agentOptions = {
-                maxSockets,
+                maxSockets: maxSockets,
                 keepAlive: this._keepAlive,
-                proxy: Object.assign(Object.assign({}, ((proxyUrl.username || proxyUrl.password) && {
-                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
-                })), { host: proxyUrl.hostname, port: proxyUrl.port })
+                proxy: {
+                    ...((proxyUrl.username || proxyUrl.password) && {
+                        proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
+                    }),
+                    host: proxyUrl.hostname,
+                    port: proxyUrl.port
+                }
             };
             let tunnelAgent;
             const overHttps = proxyUrl.protocol === 'https:';
@@ -1790,7 +1334,7 @@ class HttpClient {
         }
         // if reusing agent across request and tunneling agent isn't assigned create a new agent
         if (this._keepAlive && !agent) {
-            const options = { keepAlive: this._keepAlive, maxSockets };
+            const options = { keepAlive: this._keepAlive, maxSockets: maxSockets };
             agent = usingSsl ? new https.Agent(options) : new http.Agent(options);
             this._agent = agent;
         }
@@ -1809,117 +1353,109 @@ class HttpClient {
         return agent;
     }
     _performExponentialBackoff(retryNumber) {
-        return __awaiter(this, void 0, void 0, function* () {
-            retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
-            const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
-            return new Promise(resolve => setTimeout(() => resolve(), ms));
-        });
+        retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
+        const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
+        return new Promise(resolve => setTimeout(() => resolve(), ms));
     }
-    _processResponse(res, options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                const statusCode = res.message.statusCode || 0;
-                const response = {
-                    statusCode,
-                    result: null,
-                    headers: {}
-                };
-                // not found leads to null obj returned
-                if (statusCode === HttpCodes.NotFound) {
-                    resolve(response);
-                }
-                // get the result from the body
-                function dateTimeDeserializer(key, value) {
-                    if (typeof value === 'string') {
-                        const a = new Date(value);
-                        if (!isNaN(a.valueOf())) {
-                            return a;
-                        }
-                    }
-                    return value;
-                }
-                let obj;
-                let contents;
-                try {
-                    contents = yield res.readBody();
-                    if (contents && contents.length > 0) {
-                        if (options && options.deserializeDates) {
-                            obj = JSON.parse(contents, dateTimeDeserializer);
-                        }
-                        else {
-                            obj = JSON.parse(contents);
-                        }
-                        response.result = obj;
-                    }
-                    response.headers = res.message.headers;
-                }
-                catch (err) {
-                    // Invalid resource (contents not json);  leaving result obj null
-                }
-                // note that 3xx redirects are handled by the http layer.
-                if (statusCode > 299) {
-                    let msg;
-                    // if exception/error in body, attempt to get better error
-                    if (obj && obj.message) {
-                        msg = obj.message;
-                    }
-                    else if (contents && contents.length > 0) {
-                        // it may be the case that the exception is in the body message as string
-                        msg = contents;
+    static dateTimeDeserializer(key, value) {
+        if (typeof value === 'string') {
+            let a = new Date(value);
+            if (!isNaN(a.valueOf())) {
+                return a;
+            }
+        }
+        return value;
+    }
+    async _processResponse(res, options) {
+        return new Promise(async (resolve, reject) => {
+            const statusCode = res.message.statusCode;
+            const response = {
+                statusCode: statusCode,
+                result: null,
+                headers: {}
+            };
+            // not found leads to null obj returned
+            if (statusCode == HttpCodes.NotFound) {
+                resolve(response);
+            }
+            let obj;
+            let contents;
+            // get the result from the body
+            try {
+                contents = await res.readBody();
+                if (contents && contents.length > 0) {
+                    if (options && options.deserializeDates) {
+                        obj = JSON.parse(contents, HttpClient.dateTimeDeserializer);
                     }
                     else {
-                        msg = `Failed request: (${statusCode})`;
+                        obj = JSON.parse(contents);
                     }
-                    const err = new HttpClientError(msg, statusCode);
-                    err.result = response.result;
-                    reject(err);
+                    response.result = obj;
+                }
+                response.headers = res.message.headers;
+            }
+            catch (err) {
+                // Invalid resource (contents not json);  leaving result obj null
+            }
+            // note that 3xx redirects are handled by the http layer.
+            if (statusCode > 299) {
+                let msg;
+                // if exception/error in body, attempt to get better error
+                if (obj && obj.message) {
+                    msg = obj.message;
+                }
+                else if (contents && contents.length > 0) {
+                    // it may be the case that the exception is in the body message as string
+                    msg = contents;
                 }
                 else {
-                    resolve(response);
+                    msg = 'Failed request: (' + statusCode + ')';
                 }
-            }));
+                let err = new HttpClientError(msg, statusCode);
+                err.result = response.result;
+                reject(err);
+            }
+            else {
+                resolve(response);
+            }
         });
     }
 }
 exports.HttpClient = HttpClient;
-const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
-//# sourceMappingURL=index.js.map
+
 
 /***/ }),
 
-/***/ 9835:
+/***/ 6443:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.checkBypass = exports.getProxyUrl = void 0;
 function getProxyUrl(reqUrl) {
-    const usingSsl = reqUrl.protocol === 'https:';
+    let usingSsl = reqUrl.protocol === 'https:';
+    let proxyUrl;
     if (checkBypass(reqUrl)) {
-        return undefined;
+        return proxyUrl;
     }
-    const proxyVar = (() => {
-        if (usingSsl) {
-            return process.env['https_proxy'] || process.env['HTTPS_PROXY'];
-        }
-        else {
-            return process.env['http_proxy'] || process.env['HTTP_PROXY'];
-        }
-    })();
-    if (proxyVar) {
-        return new URL(proxyVar);
+    let proxyVar;
+    if (usingSsl) {
+        proxyVar = process.env['https_proxy'] || process.env['HTTPS_PROXY'];
     }
     else {
-        return undefined;
+        proxyVar = process.env['http_proxy'] || process.env['HTTP_PROXY'];
     }
+    if (proxyVar) {
+        proxyUrl = new URL(proxyVar);
+    }
+    return proxyUrl;
 }
 exports.getProxyUrl = getProxyUrl;
 function checkBypass(reqUrl) {
     if (!reqUrl.hostname) {
         return false;
     }
-    const noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
+    let noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
     if (!noProxy) {
         return false;
     }
@@ -1935,12 +1471,12 @@ function checkBypass(reqUrl) {
         reqPort = 443;
     }
     // Format the request hostname and hostname with port
-    const upperReqHosts = [reqUrl.hostname.toUpperCase()];
+    let upperReqHosts = [reqUrl.hostname.toUpperCase()];
     if (typeof reqPort === 'number') {
         upperReqHosts.push(`${upperReqHosts[0]}:${reqPort}`);
     }
     // Compare request host against noproxy
-    for (const upperNoProxyItem of noProxy
+    for (let upperNoProxyItem of noProxy
         .split(',')
         .map(x => x.trim().toUpperCase())
         .filter(x => x)) {
@@ -1951,7 +1487,7 @@ function checkBypass(reqUrl) {
     return false;
 }
 exports.checkBypass = checkBypass;
-//# sourceMappingURL=proxy.js.map
+
 
 /***/ }),
 
@@ -23242,34 +22778,34 @@ exports.visitAsync = visitAsync;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const core = __webpack_require__(2186);
-const {getOctokit} = __webpack_require__(5438);
+const { getOctokit } = __webpack_require__(5438);
 const axios = __webpack_require__(6545);
-const yaml = __webpack_require__(5065)
+const yaml = __webpack_require__(5065);
 const fs = __webpack_require__(5747);
 
-let octokit
+let octokit;
 
 const initOctokit = (token) => {
   octokit = getOctokit(token);
-}
+};
 
 const getWorkflow = async (context) => {
   const res = await octokit.rest.actions.listRepoWorkflows({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    per_page: 100
+    per_page: 100,
   });
-  return res.data.workflows.find(w => w.name === context.workflow)
-}
+  return res.data.workflows.find((w) => w.name === context.workflow);
+};
 
 const getJob = async (jobName, context) => {
   // get job ID and step number
   const res = await octokit.rest.actions.listJobsForWorkflowRun({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    run_id: context.runId
+    run_id: context.runId,
   });
-  const job = res.data.jobs.find(j => j.name === jobName);
+  const job = res.data.jobs.find((j) => j.name === jobName);
   if (!job) {
     throw new Error(`failed to get job with name: ${jobName}`);
   }
@@ -23281,53 +22817,53 @@ const getJobLogs = async (job, context) => {
   const res = await octokit.rest.actions.downloadJobLogsForWorkflowRun({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    job_id: job.id
+    job_id: job.id,
   });
 
   // get job logs
   const res2 = await axios.get(res.url);
 
-  return res2.data.split('\r\n');
+  return res2.data.split("\r\n");
 };
 
 const getNumActionsOfStepRecursive = (step) => {
-  let ret = 1
+  let ret = 1;
   if (step.uses && fs.existsSync(step.uses)) {
-    const actionFile = fs.readFileSync(`${step.uses}/action.yml`, {encoding: 'utf-8'});
-    const actionYaml = yaml.parse(actionFile)
+    const actionFile = fs.readFileSync(`${step.uses}/action.yml`, { encoding: "utf-8" });
+    const actionYaml = yaml.parse(actionFile);
     for (const s of actionYaml.runs.steps) {
-      ret += getNumActionsOfStepRecursive(s)
+      ret += getNumActionsOfStepRecursive(s);
     }
   }
-  return ret
-}
+  return ret;
+};
 
 const getNumStepActions = async (jobName, context) => {
-  const workflow = await getWorkflow(context)
-  const workflowFile = fs.readFileSync(workflow.path, {encoding: 'utf-8'});
-  const workflowYaml = yaml.parse(workflowFile)
-  const steps = workflowYaml.jobs[jobName].steps
-  const numActions = [1]
+  const workflow = await getWorkflow(context);
+  const workflowFile = fs.readFileSync(workflow.path, { encoding: "utf-8" });
+  const workflowYaml = yaml.parse(workflowFile);
+  const steps = workflowYaml.jobs[jobName].steps;
+  const numActions = [1];
   for (const s of steps) {
-    numActions.push(getNumActionsOfStepRecursive(s))
+    numActions.push(getNumActionsOfStepRecursive(s));
   }
-  return numActions
-}
+  return numActions;
+};
 
 const getStepLogs = async (jobName, stepName, context) => {
   const job = await getJob(jobName, context);
-  const step = job.steps.find(s => s.name === stepName);
+  const step = job.steps.find((s) => s.name === stepName);
   if (!step) {
     throw new Error(`failed to get step with name: ${stepName}`);
   }
 
   const logs = await getJobLogs(job, context);
-  const numStepActions = await getNumStepActions(jobName, context)
+  const numStepActions = await getNumStepActions(jobName, context);
 
   // divide logs by each step
   const stepsLogs = [];
   let lines = [];
-  let curStep = 0
+  let curStep = 0;
   for (const l of logs) {
     // trim ISO8601 date string
     const m1 = l.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z) (.*)$/);
@@ -23338,11 +22874,11 @@ const getStepLogs = async (jobName, stepName, context) => {
     // each step begins with this pattern for now
     const m2 = body.match(/^##\[group\]Run /);
     if (m2) {
-      numStepActions[curStep] -= 1
+      numStepActions[curStep] -= 1;
       if (numStepActions[curStep] === 0) {
         stepsLogs.push(lines);
         lines = [body];
-        curStep += 1
+        curStep += 1;
       } else {
         lines.push(body);
       }
@@ -23350,7 +22886,7 @@ const getStepLogs = async (jobName, stepName, context) => {
       lines.push(body);
     }
   }
-  stepsLogs.push(lines)
+  stepsLogs.push(lines);
 
   core.info(JSON.stringify(stepsLogs));
   return stepsLogs[step.number - 1];
@@ -23358,7 +22894,7 @@ const getStepLogs = async (jobName, stepName, context) => {
 
 const getPlanStepUrl = async (jobName, stepName, context, offset) => {
   const job = await getJob(jobName, context);
-  const step = job.steps.find(s => s.name === stepName);
+  const step = job.steps.find((s) => s.name === stepName);
   if (!step) {
     return null;
   }
@@ -23368,7 +22904,7 @@ const getPlanStepUrl = async (jobName, stepName, context, offset) => {
 module.exports = {
   initOctokit,
   getStepLogs,
-  getPlanStepUrl
+  getPlanStepUrl,
 };
 
 
@@ -23395,32 +22931,33 @@ try {
 const core = __webpack_require__(2186);
 const { context } = __webpack_require__(5438);
 const parse = __webpack_require__(1809);
-const send = __webpack_require__(9393);
+const { sendByBotToken, sendByWebhookUrl } = __webpack_require__(9393);
 const { jsonString } = __webpack_require__(6254);
 const { getStepLogs, getPlanStepUrl, initOctokit } = __webpack_require__(8396);
 const createMessage = __webpack_require__(7480);
 
 const main = async () => {
-  let jobName = core.getInput('plan-job-name').trim();
-  const stepName = core.getInput('plan-step-name').trim();
-  const workspace = core.getInput('workspace').trim();
-  const channel = core.getInput('channel').trim();
-  let githubToken = core.getInput('github-token').trim();
-  let slackBotToken = core.getInput('slack-bot-token').trim();
+  const jobName = core.getInput("plan-job-name").trim();
+  const stepName = core.getInput("plan-step-name").trim();
+  const workspace = core.getInput("workspace").trim();
+  const channel = core.getInput("channel").trim();
+  let githubToken = core.getInput("github-token").trim();
+  const defaultGithubToken = core.getInput("default-github-token").trim();
+  let slackBotToken = core.getInput("slack-bot-token").trim();
+  let slackWebhookUrl = core.getInput("slack-webhook-url").trim();
 
-  // github token can be also given via env
-  githubToken = githubToken || process.env.GITHUB_TOKEN;
-  if (githubToken === '') {
-    throw new Error('Need to provide one of github-token or GITHUB_TOKEN environment variable');
+  githubToken = githubToken || process.env.GITHUB_TOKEN || defaultGithubToken;
+  if (!githubToken) {
+    throw new Error("No GitHub token provided");
   }
 
-  // slack bot token can be also given via env
   slackBotToken = slackBotToken || process.env.SLACK_BOT_TOKEN;
-  if (slackBotToken === '') {
-    throw new Error('Need to provide one of slack-bot-token or SLACK_BOT_TOKEN environment variable');
+  slackWebhookUrl = slackWebhookUrl || process.env.SLACK_WEBHOOK_URL;
+  if (!(slackBotToken && channel) && !slackWebhookUrl) {
+    throw new Error("Need to specify the Slack bot token and the channel name, or the webhook URL.");
   }
 
-  initOctokit(githubToken)
+  initOctokit(githubToken);
 
   const input = await getStepLogs(jobName, stepName, context);
 
@@ -23430,14 +22967,19 @@ const main = async () => {
 
   const message = createMessage(result, workspace, planUrl);
 
-  await send(channel, slackBotToken, message);
+  if (slackBotToken) {
+    await sendByBotToken(slackBotToken, channel, message);
+  }
+  if (slackWebhookUrl) {
+    await sendByWebhookUrl(slackWebhookUrl, message);
+  }
 
-  core.setOutput('outside', jsonString(result.output));
-  core.setOutput('action', jsonString(result.action));
-  core.setOutput('output', jsonString(result.output));
-  core.setOutput('warning', jsonString(result.warning));
-  core.setOutput('summary', jsonString(result.summary));
-  core.setOutput('should-apply', result.shouldApply);
+  core.setOutput("outside", jsonString(result.output));
+  core.setOutput("action", jsonString(result.action));
+  core.setOutput("output", jsonString(result.output));
+  core.setOutput("warning", jsonString(result.warning));
+  core.setOutput("summary", jsonString(result.summary));
+  core.setOutput("should-apply", result.shouldApply);
 };
 
 module.exports = main;
@@ -23451,40 +22993,37 @@ module.exports = main;
 const { findLinesBetween, findSections, anyMatch, findLine } = __webpack_require__(6254);
 const core = __webpack_require__(2186);
 
-
 const getOutsideChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Note: Objects have changed outside of Terraform$/,
-    /^─+/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^ {2}# (?<name>.*) has changed/,
-      /^$/)
+    sections: findSections(lines, /^ {2}# (?<name>.*) has changed/, /^$/),
   };
 };
 
 const getResourceActionSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
+  const { offset, lines } = findLinesBetween(
+    inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/);
+    /^Plan:/
+  );
 
   const patterns = {
     create: /^ {2}# (?<name>.*?) will be created$/,
     update: /^ {2}# (?<name>.*?) will be updated in-place$/,
     replace: /^ {2}# (?<name>.*?) ((is tainted, so )?must be replaced|will be replaced, as requested)$/,
-    destroy: /^ {2}# (?<name>.*?) will be destroyed$/
+    destroy: /^ {2}# (?<name>.*?) will be destroyed$/,
   };
 
   let inside = null;
   let groups = {};
   let str = null;
-  let sections = {
+  const sections = {
     create: [],
     update: [],
     replace: [],
-    destroy: []
+    destroy: [],
   };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -23493,19 +23032,19 @@ const getResourceActionSection = (inputLines) => {
       if (m) {
         sections[inside].push({
           ...groups,
-          str
+          str,
         });
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       } else {
-        str += line + '\n';
+        str += line + "\n";
       }
     } else {
       const m = anyMatch(patterns, line);
       if (m) {
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       }
     }
@@ -23514,66 +23053,56 @@ const getResourceActionSection = (inputLines) => {
   if (inside) {
     sections[inside].push({
       ...groups,
-      str
+      str,
     });
   }
   return {
     offset,
-    sections
+    sections,
   };
 };
 
 const getOutputChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Changes to Outputs:$/,
-    /^[─╷]/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Changes to Outputs:$/, /^[─╷]/);
 
-  const str = lines.join('\n');
+  const str = lines.join("\n");
   return {
     offset,
-    sections: findSections(lines,
-      /^\s{2}[+~-]\s(?<name>.*?)\s=/,
-      /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/,
-      true
-    ),
-    str
+    sections: findSections(lines, /^\s{2}[+~-]\s(?<name>.*?)\s=/, /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/, true),
+    str,
   };
 };
 
 const getWarningSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^╷/,
-    /^$/);
+  const { offset, lines } = findLinesBetween(inputLines, /^╷/, /^$/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^│ Warning:/,
-      /^╵/)
+    sections: findSections(lines, /^│ Warning:/, /^╵/),
   };
 };
 
 const getSummarySection = (inputLines) => {
   {
-    let { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
+    const { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
     if (match) {
       return {
         offset,
         add: parseInt(match[1]),
         change: parseInt(match[2]),
         destroy: parseInt(match[3]),
-        str: match[0]
+        str: match[0],
       };
     }
   }
   {
-    let { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
+    const { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
     return {
       offset,
       add: 0,
       change: 0,
       destroy: 0,
-      str: match ? match[0] : ''
+      str: match ? match[0] : "",
     };
   }
 };
@@ -23581,7 +23110,7 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, '')); // eslint-disable-line no-control-regex
+    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
   }
   core.info(lines);
 
@@ -23594,8 +23123,8 @@ const parse = (rawLines) => {
   const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
-  if (summary.str === '' && output.sections.length > 0) {
-    summary.offset = output.offset
+  if (summary.str === "" && output.sections.length > 0) {
+    summary.offset = output.offset;
     summary.str = `Output Changes: ${output.sections.length}`;
   }
 
@@ -23605,7 +23134,7 @@ const parse = (rawLines) => {
     output,
     warning,
     summary,
-    shouldApply
+    shouldApply,
   };
 };
 
@@ -23617,31 +23146,54 @@ module.exports = parse;
 /***/ 9393:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const core = __webpack_require__(2186);
 const axios = __webpack_require__(6545);
 
-const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
+const SLACK_API_URL = "https://slack.com/api/chat.postMessage";
 
-
-const send = async (channel, token, message) => {
-
+const sendByBotToken = async (token, channel, message) => {
   message.channel = channel;
-
-  core.debug(message);
-
-  const res = await axios.post(SLACK_API_URL, message, {
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': `Bearer ${token}`
+  let res;
+  try {
+    res = await axios.post(SLACK_API_URL, message, {
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (e) {
+    if (e.response) {
+      throw new Error(`failed to send to Slack: status=${e.response.status}, data=${JSON.stringify(e.response.data)}`);
+    } else {
+      throw new Error(`failed to send to Slack: no response.`);
     }
-  });
+  }
   if (!(res.status === 200 && res.data && res.data.ok)) {
     throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
   }
   return res.data;
 };
 
-module.exports = send;
+const sendByWebhookUrl = async (url, message) => {
+  let res;
+  try {
+    res = await axios.post(url, message);
+  } catch (e) {
+    if (e.response) {
+      throw new Error(`failed to send to Slack: status=${e.response.status}, data=${JSON.stringify(e.response.data)}`);
+    } else {
+      throw new Error(`failed to send to Slack: no response`);
+    }
+  }
+  if (!(res.status === 200 && res.data === "ok")) {
+    throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
+  }
+  return res.data;
+};
+
+module.exports = {
+  sendByBotToken,
+  sendByWebhookUrl,
+};
 
 
 /***/ }),
@@ -23650,98 +23202,98 @@ module.exports = send;
 /***/ ((module) => {
 
 const GOOD = {
-  color: '#2EB886',
-  icon: ':white_check_mark:'
+  color: "#2EB886",
+  icon: ":white_check_mark:",
 };
 const WARNING = {
-  color: '#DAA038',
-  icon: ':warning:'
+  color: "#DAA038",
+  icon: ":warning:",
 };
 
-const LIMIT = 900
+const LIMIT = 900;
 
 const createMessage = (plan, env, planUrl) => {
   let props = GOOD;
   if (plan.summary.destroy > 0) {
     props = WARNING;
   }
-  let ret = {
-    text: `Succeeded Terraform Plan${env ? ` for ${env}` : ''}`,
+  const ret = {
+    text: `Succeeded Terraform Plan${env ? ` for ${env}` : ""}`,
     blocks: [
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'mrkdwn',
-          text: `:construction: Succeeded Terraform Plan${env ? ` for *\`${env}\`*` : ''}`
-        }
-      }
+          type: "mrkdwn",
+          text: `:construction: Succeeded Terraform Plan${env ? ` for *\`${env}\`*` : ""}`,
+        },
+      },
     ],
     attachments: [
       {
         color: props.color,
         blocks: [
           {
-            type: 'section',
+            type: "section",
             text: {
-              type: 'mrkdwn',
-              text: `${props.icon} *${plan.summary.str}*`
-            }
-          }
-        ]
-      }
-    ]
+              type: "mrkdwn",
+              text: `${props.icon} *${plan.summary.str}*`,
+            },
+          },
+        ],
+      },
+    ],
   };
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map(a => a.name).join('\n');
+    let names = added.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Add*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Add*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map(a => a.name).join('\n');
+    let names = plan.action.sections.update.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Change*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Change*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map(a => a.name).join('\n');
+    let names = destroyed.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Destroy*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Destroy*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   ret.attachments[0].blocks.push({
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
-      text: `<${planUrl}|Click here> to see full logs.`
-    }
+      type: "mrkdwn",
+      text: `<${planUrl}|Click here> to see full logs.`,
+    },
   });
 
   return ret;
@@ -23762,13 +23314,13 @@ const findLine = (lines, pattern) => {
     if (m) {
       return {
         offset: i,
-        match: m
+        match: m,
       };
     }
   }
   return {
     offset: -1,
-    match: null
+    match: null,
   };
 };
 const findLinesBetween = (lines, beginPattern, endPattern) => {
@@ -23793,12 +23345,12 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   }
   return {
     offset,
-    lines: matched
+    lines: matched,
   };
 };
 
 const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
-  let ret = [];
+  const ret = [];
   let groups = {};
   let str = null;
   let inside = false;
@@ -23808,28 +23360,28 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
       if (m) {
         ret.push({
           ...groups,
-          str
+          str,
         });
         if (includeEndPattern) {
           const m = line.match(beginPattern);
           if (m) {
             groups = m.groups;
-            str = line + '\n';
+            str = line + "\n";
             inside = true;
-            continue
+            continue;
           }
         }
         groups = {};
         str = null;
         inside = false;
       } else {
-        str += line + '\n';
+        str += line + "\n";
       }
     } else {
       const m = line.match(beginPattern);
       if (m) {
         groups = m.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = true;
       }
     }
@@ -23843,7 +23395,7 @@ const anyMatch = (patterns, line) => {
     if (m) {
       return {
         name: k,
-        match: m
+        match: m,
       };
     }
   }
@@ -23851,18 +23403,18 @@ const anyMatch = (patterns, line) => {
 };
 
 const jsonEscape = (key, val) => {
-  if (typeof (val) != 'string') {
+  if (typeof val !== "string") {
     return val;
   }
   return val
-    .replace(/[\\]/g, '\\\\')
-    .replace(/[\"]/g, '\\"')
-    .replace(/[\/]/g, '\\/')
-    .replace(/[\b]/g, '\\b')
-    .replace(/[\f]/g, '\\f')
-    .replace(/[\n]/g, '\\n')
-    .replace(/[\r]/g, '\\r')
-    .replace(/[\t]/g, '\\t');
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\//g, "\\/")
+    .replace(/\b/g, "\\b")
+    .replace(/\f/g, "\\f")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
 };
 
 const jsonString = (obj) => {
@@ -23874,7 +23426,7 @@ module.exports = {
   findLinesBetween,
   findSections,
   anyMatch,
-  jsonString
+  jsonString,
 };
 
 

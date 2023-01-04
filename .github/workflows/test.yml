@@ -1,0 +1,71 @@
+name: Test
+
+on:
+  pull_request:
+
+
+jobs:
+  show-context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show github context object
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+  
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./.github/workflows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup tools
+        uses: ./.github/actions/setup-tools
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Run terraform init
+        run: terraform init
+      - name: Select dev workspace
+        run: terraform workspace select dev
+      - name: Run terraform plan for dev
+        run: terraform plan -out tfplan-dev
+      - name: Select prod workspace
+        run: terraform workspace select prod
+      - name: Run terraform plan for prod
+        run: |
+          terraform taint aws_dynamodb_table.test
+          terraform plan -out tfplan-prod
+      - name: Upload plan file
+        uses: actions/upload-artifact@v3
+        with:
+          name: Terraform plan file
+          path: |
+            tfplan-dev
+            tfplan-prod
+  
+  after-plan:
+    runs-on: ubuntu-latest
+    needs:
+      - plan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Notify terraform plan result to slack for dev
+        uses: ./
+        with:
+          plan-job-name: plan
+          plan-step-name: Run terraform plan for dev
+          workspace: dev
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          channel: sample-basic-ci
+      - name: Notify terraform plan result to slack for prod
+        uses: ./
+        with:
+          plan-job-name: plan
+          plan-step-name: Run terraform plan for prod
+          workspace: prod
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

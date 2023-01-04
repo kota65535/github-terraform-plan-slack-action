@@ -1,40 +1,37 @@
-const { findLinesBetween, findSections, anyMatch, findLine } = require('./util');
-const core = require('@actions/core');
-
+const { findLinesBetween, findSections, anyMatch, findLine } = require("./util");
+const core = require("@actions/core");
 
 const getOutsideChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Note: Objects have changed outside of Terraform$/,
-    /^─+/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^ {2}# (?<name>.*) has changed/,
-      /^$/)
+    sections: findSections(lines, /^ {2}# (?<name>.*) has changed/, /^$/),
   };
 };
 
 const getResourceActionSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
+  const { offset, lines } = findLinesBetween(
+    inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/);
+    /^Plan:/
+  );
 
   const patterns = {
     create: /^ {2}# (?<name>.*?) will be created$/,
     update: /^ {2}# (?<name>.*?) will be updated in-place$/,
     replace: /^ {2}# (?<name>.*?) ((is tainted, so )?must be replaced|will be replaced, as requested)$/,
-    destroy: /^ {2}# (?<name>.*?) will be destroyed$/
+    destroy: /^ {2}# (?<name>.*?) will be destroyed$/,
   };
 
   let inside = null;
   let groups = {};
   let str = null;
-  let sections = {
+  const sections = {
     create: [],
     update: [],
     replace: [],
-    destroy: []
+    destroy: [],
   };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -43,19 +40,19 @@ const getResourceActionSection = (inputLines) => {
       if (m) {
         sections[inside].push({
           ...groups,
-          str
+          str,
         });
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       } else {
-        str += line + '\n';
+        str += line + "\n";
       }
     } else {
       const m = anyMatch(patterns, line);
       if (m) {
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       }
     }
@@ -64,66 +61,56 @@ const getResourceActionSection = (inputLines) => {
   if (inside) {
     sections[inside].push({
       ...groups,
-      str
+      str,
     });
   }
   return {
     offset,
-    sections
+    sections,
   };
 };
 
 const getOutputChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Changes to Outputs:$/,
-    /^[─╷]/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Changes to Outputs:$/, /^[─╷]/);
 
-  const str = lines.join('\n');
+  const str = lines.join("\n");
   return {
     offset,
-    sections: findSections(lines,
-      /^\s{2}[+~-]\s(?<name>.*?)\s=/,
-      /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/,
-      true
-    ),
-    str
+    sections: findSections(lines, /^\s{2}[+~-]\s(?<name>.*?)\s=/, /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/, true),
+    str,
   };
 };
 
 const getWarningSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^╷/,
-    /^$/);
+  const { offset, lines } = findLinesBetween(inputLines, /^╷/, /^$/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^│ Warning:/,
-      /^╵/)
+    sections: findSections(lines, /^│ Warning:/, /^╵/),
   };
 };
 
 const getSummarySection = (inputLines) => {
   {
-    let { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
+    const { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
     if (match) {
       return {
         offset,
         add: parseInt(match[1]),
         change: parseInt(match[2]),
         destroy: parseInt(match[3]),
-        str: match[0]
+        str: match[0],
       };
     }
   }
   {
-    let { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
+    const { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
     return {
       offset,
       add: 0,
       change: 0,
       destroy: 0,
-      str: match ? match[0] : ''
+      str: match ? match[0] : "",
     };
   }
 };
@@ -131,7 +118,7 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, '')); // eslint-disable-line no-control-regex
+    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
   }
   core.info(lines);
 
@@ -144,8 +131,8 @@ const parse = (rawLines) => {
   const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
-  if (summary.str === '' && output.sections.length > 0) {
-    summary.offset = output.offset
+  if (summary.str === "" && output.sections.length > 0) {
+    summary.offset = output.offset;
     summary.str = `Output Changes: ${output.sections.length}`;
   }
 
@@ -155,7 +142,7 @@ const parse = (rawLines) => {
     output,
     warning,
     summary,
-    shouldApply
+    shouldApply,
   };
 };
 

@@ -5,23 +5,24 @@ branding:
   color: "purple"
 inputs:
   plan-job-name:
-    description: "Plan job name"
+    description: "Job name where `terraform plan` has been run"
     required: true
   plan-step-name:
-    description: "Name of the job step that executed Terraform Plan"
+    description: "Step name where `terraform plan` has been run"
     required: true
   workspace:
     description: "Workspace name"
-    required: false
   channel:
     description: "Slack Channel ID or name"
-    required: true
   github-token:
     description: "GitHub token"
-    required: false
+  default-github-token:
+    description: "Default gitHub token"
+    default: ${{ github.token }}
   slack-bot-token:
     description: "Slack bot token"
-    required: false
+  slack-webhook-url:
+    description: "Slack webhook URL"
 outputs:
   outside:
     description: "Changes outside section"

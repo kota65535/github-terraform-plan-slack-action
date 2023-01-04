@@ -65,7 +65,7 @@ jobs:
       - name: Notify terraform plan result to slack for prod
         uses: ./
         with:
-          plan-job: plan
-          plan-step: Run terraform plan for prod
+          plan-job-name: plan
+          plan-step-name: Run terraform plan for prod
           workspace: prod
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

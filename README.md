@@ -12,8 +12,8 @@ GitHub Action for sending terraform plan result to a Slack channel.
 
 | Name                | Description                                   | Required | Default                                            |
 |---------------------|-----------------------------------------------|----------|----------------------------------------------------|
-| `plan-job`          | Job name where `terraform plan` has been run  | Yes      | N/A                                                |
-| `plan-step`         | Step name where `terraform plan` has been run | Yes      | N/A                                                |
+| `plan-job-name`     | Job name where `terraform plan` has been run  | Yes      | N/A                                                |
+| `plan-step-name`    | Step name where `terraform plan` has been run | Yes      | N/A                                                |
 | `workspace`         | Terraform workspace name                      | No       | N/A                                                |
 | `github-token`      | GitHub token                                  | No       | `${{ env.GITHUB_TOKEN }}` or `${{ github.token }}` | 
 | `slack-bot-token`   | Slack bot token                               | No [^1]  | `${{ env.SLACK_BOT_TOKEN }}`                       | 
@@ -46,8 +46,8 @@ Use this action after the job where you run `terraform plan`.
       - name: Notify terraform plan result as PR comment
         uses: kota65535/github-terraform-plan-slack-action
         with:
-          plan-job: plan
-          plan-step: Run terraform plan for dev
+          plan-job-name: plan
+          plan-step-name: Run terraform plan for dev
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel: my-ci-channel
 ```

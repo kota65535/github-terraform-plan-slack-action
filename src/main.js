@@ -7,8 +7,8 @@ const { getStepLogs, getPlanStepUrl, initOctokit } = require("./github");
 const createMessage = require("./slack_message");
 
 const main = async () => {
-  const jobName = core.getInput("plan-job-name").trim();
-  const stepName = core.getInput("plan-step-name").trim();
+  const jobName = core.getInput("plan-job").trim();
+  const stepName = core.getInput("plan-step").trim();
   const workspace = core.getInput("workspace").trim();
   const channel = core.getInput("channel").trim();
   let githubToken = core.getInput("github-token").trim();

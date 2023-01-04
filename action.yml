@@ -4,10 +4,10 @@ branding:
   icon: "cloud"
   color: "purple"
 inputs:
-  plan-job-name:
+  plan-job:
     description: "Job name where `terraform plan` has been run"
     required: true
-  plan-step-name:
+  plan-step:
     description: "Step name where `terraform plan` has been run"
     required: true
   workspace:

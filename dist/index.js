@@ -22937,8 +22937,8 @@ const { getStepLogs, getPlanStepUrl, initOctokit } = __webpack_require__(8396);
 const createMessage = __webpack_require__(7480);
 
 const main = async () => {
-  const jobName = core.getInput("plan-job-name").trim();
-  const stepName = core.getInput("plan-step-name").trim();
+  const jobName = core.getInput("plan-job").trim();
+  const stepName = core.getInput("plan-step").trim();
   const workspace = core.getInput("workspace").trim();
   const channel = core.getInput("channel").trim();
   let githubToken = core.getInput("github-token").trim();

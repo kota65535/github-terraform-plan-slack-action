@@ -10,15 +10,15 @@ GitHub Action for sending terraform plan result to a Slack channel.
 
 ## Inputs
 
-| Name                | Description                                   | Required | Default                                            |
-|---------------------|-----------------------------------------------|----------|----------------------------------------------------|
-| `plan-job-name`     | Job name where `terraform plan` has been run  | Yes      | N/A                                                |
-| `plan-step-name`    | Step name where `terraform plan` has been run | Yes      | N/A                                                |
-| `workspace`         | Terraform workspace name                      | No       | N/A                                                |
-| `github-token`      | GitHub token                                  | No       | `${{ env.GITHUB_TOKEN }}` or `${{ github.token }}` | 
-| `slack-bot-token`   | Slack bot token                               | No [^1]  | `${{ env.SLACK_BOT_TOKEN }}`                       | 
-| `channel`           | Slack channel name                            | No [^1]  | N/A                                                | 
-| `slack-webhook-url` | Slack webhook URL                             | No [^1]  | `${{ env.SLACK_WEBHOOK_URL }}`                     | 
+| Name                | Description                                   | Required | Default                                                 |
+|---------------------|-----------------------------------------------|----------|---------------------------------------------------------|
+| `plan-job`          | Job name where `terraform plan` has been run  | Yes      | N/A                                                     |
+| `plan-step`         | Step name where `terraform plan` has been run | Yes      | N/A                                                     |
+| `workspace`         | Terraform workspace name                      | No       | N/A                                                     |
+| `github-token`      | GitHub token                                  | No       | `${{ env.GITHUB_TOKEN }}` or<br/> `${{ github.token }}` | 
+| `slack-bot-token`   | Slack bot token                               | No [^1]  | `${{ env.SLACK_BOT_TOKEN }}`                            | 
+| `channel`           | Slack channel name                            | No [^1]  | N/A                                                     | 
+| `slack-webhook-url` | Slack webhook URL                             | No [^1]  | `${{ env.SLACK_WEBHOOK_URL }}`                          | 
 
 [^1]: Need to specify both `slack-bot-token` and `channel`, or `slack-webhook-url`.
 
@@ -46,8 +46,8 @@ Use this action after the job where you run `terraform plan`.
       - name: Notify terraform plan result as PR comment
         uses: kota65535/github-terraform-plan-slack-action
         with:
-          plan-job-name: plan
-          plan-step-name: Run terraform plan for dev
+          plan-job: plan
+          plan-step: Run terraform plan
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel: my-ci-channel
 ```

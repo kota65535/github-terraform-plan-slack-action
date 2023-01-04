@@ -57,15 +57,15 @@ jobs:
       - name: Notify terraform plan result to slack for dev
         uses: ./
         with:
-          plan-job-name: plan
-          plan-step-name: Run terraform plan for dev
+          plan-job: plan
+          plan-step: Run terraform plan for dev
           workspace: dev
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel: sample-basic-ci
       - name: Notify terraform plan result to slack for prod
         uses: ./
         with:
-          plan-job-name: plan
-          plan-step-name: Run terraform plan for prod
+          plan-job: plan
+          plan-step: Run terraform plan for prod
           workspace: prod
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}

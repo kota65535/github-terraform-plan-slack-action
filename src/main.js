@@ -7,14 +7,19 @@ const { getStepLogs, getPlanStepUrl, initOctokit } = require("./github");
 const createMessage = require("./slack_message");
 
 const main = async () => {
-  const jobName = core.getInput("plan-job").trim();
-  const stepName = core.getInput("plan-step").trim();
+  let jobName = core.getInput("plan-job").trim();
+  let stepName = core.getInput("plan-step").trim();
+  const jobNameDeprecated = core.getInput("plan-job-name").trim();
+  const stepNameDeprecated = core.getInput("plan-step-name").trim();
   const workspace = core.getInput("workspace").trim();
   const channel = core.getInput("channel").trim();
   let githubToken = core.getInput("github-token").trim();
   const defaultGithubToken = core.getInput("default-github-token").trim();
   let slackBotToken = core.getInput("slack-bot-token").trim();
   let slackWebhookUrl = core.getInput("slack-webhook-url").trim();
+
+  jobName = jobName || jobNameDeprecated;
+  stepName = stepName || stepNameDeprecated;
 
   githubToken = githubToken || process.env.GITHUB_TOKEN || defaultGithubToken;
   if (!githubToken) {

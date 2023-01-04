@@ -11,14 +11,8 @@ const main = async () => {
   const stepName = core.getInput("plan-step").trim();
   const workspace = core.getInput("workspace").trim();
   const channel = core.getInput("channel").trim();
-  let githubToken = core.getInput("github-token").trim();
+  const githubToken = core.getInput("github-token").trim();
   let slackBotToken = core.getInput("slack-bot-token").trim();
-
-  // github token can be also given via env
-  githubToken = githubToken || process.env.GITHUB_TOKEN;
-  if (githubToken === "") {
-    throw new Error("Need to provide one of github-token or GITHUB_TOKEN environment variable");
-  }
 
   // slack bot token can be also given via env
   slackBotToken = slackBotToken || process.env.SLACK_BOT_TOKEN;

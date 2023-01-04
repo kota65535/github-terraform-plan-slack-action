@@ -22778,34 +22778,34 @@ exports.visitAsync = visitAsync;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const core = __webpack_require__(2186);
-const {getOctokit} = __webpack_require__(5438);
+const { getOctokit } = __webpack_require__(5438);
 const axios = __webpack_require__(6545);
-const yaml = __webpack_require__(5065)
+const yaml = __webpack_require__(5065);
 const fs = __webpack_require__(5747);
 
-let octokit
+let octokit;
 
 const initOctokit = (token) => {
   octokit = getOctokit(token);
-}
+};
 
 const getWorkflow = async (context) => {
   const res = await octokit.rest.actions.listRepoWorkflows({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    per_page: 100
+    per_page: 100,
   });
-  return res.data.workflows.find(w => w.name === context.workflow)
-}
+  return res.data.workflows.find((w) => w.name === context.workflow);
+};
 
 const getJob = async (jobName, context) => {
   // get job ID and step number
   const res = await octokit.rest.actions.listJobsForWorkflowRun({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    run_id: context.runId
+    run_id: context.runId,
   });
-  const job = res.data.jobs.find(j => j.name === jobName);
+  const job = res.data.jobs.find((j) => j.name === jobName);
   if (!job) {
     throw new Error(`failed to get job with name: ${jobName}`);
   }
@@ -22817,53 +22817,53 @@ const getJobLogs = async (job, context) => {
   const res = await octokit.rest.actions.downloadJobLogsForWorkflowRun({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    job_id: job.id
+    job_id: job.id,
   });
 
   // get job logs
   const res2 = await axios.get(res.url);
 
-  return res2.data.split('\r\n');
+  return res2.data.split("\r\n");
 };
 
 const getNumActionsOfStepRecursive = (step) => {
-  let ret = 1
+  let ret = 1;
   if (step.uses && fs.existsSync(step.uses)) {
-    const actionFile = fs.readFileSync(`${step.uses}/action.yml`, {encoding: 'utf-8'});
-    const actionYaml = yaml.parse(actionFile)
+    const actionFile = fs.readFileSync(`${step.uses}/action.yml`, { encoding: "utf-8" });
+    const actionYaml = yaml.parse(actionFile);
     for (const s of actionYaml.runs.steps) {
-      ret += getNumActionsOfStepRecursive(s)
+      ret += getNumActionsOfStepRecursive(s);
     }
   }
-  return ret
-}
+  return ret;
+};
 
 const getNumStepActions = async (jobName, context) => {
-  const workflow = await getWorkflow(context)
-  const workflowFile = fs.readFileSync(workflow.path, {encoding: 'utf-8'});
-  const workflowYaml = yaml.parse(workflowFile)
-  const steps = workflowYaml.jobs[jobName].steps
-  const numActions = [1]
+  const workflow = await getWorkflow(context);
+  const workflowFile = fs.readFileSync(workflow.path, { encoding: "utf-8" });
+  const workflowYaml = yaml.parse(workflowFile);
+  const steps = workflowYaml.jobs[jobName].steps;
+  const numActions = [1];
   for (const s of steps) {
-    numActions.push(getNumActionsOfStepRecursive(s))
+    numActions.push(getNumActionsOfStepRecursive(s));
   }
-  return numActions
-}
+  return numActions;
+};
 
 const getStepLogs = async (jobName, stepName, context) => {
   const job = await getJob(jobName, context);
-  const step = job.steps.find(s => s.name === stepName);
+  const step = job.steps.find((s) => s.name === stepName);
   if (!step) {
     throw new Error(`failed to get step with name: ${stepName}`);
   }
 
   const logs = await getJobLogs(job, context);
-  const numStepActions = await getNumStepActions(jobName, context)
+  const numStepActions = await getNumStepActions(jobName, context);
 
   // divide logs by each step
   const stepsLogs = [];
   let lines = [];
-  let curStep = 0
+  let curStep = 0;
   for (const l of logs) {
     // trim ISO8601 date string
     const m1 = l.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z) (.*)$/);
@@ -22874,11 +22874,11 @@ const getStepLogs = async (jobName, stepName, context) => {
     // each step begins with this pattern for now
     const m2 = body.match(/^##\[group\]Run /);
     if (m2) {
-      numStepActions[curStep] -= 1
+      numStepActions[curStep] -= 1;
       if (numStepActions[curStep] === 0) {
         stepsLogs.push(lines);
         lines = [body];
-        curStep += 1
+        curStep += 1;
       } else {
         lines.push(body);
       }
@@ -22886,7 +22886,7 @@ const getStepLogs = async (jobName, stepName, context) => {
       lines.push(body);
     }
   }
-  stepsLogs.push(lines)
+  stepsLogs.push(lines);
 
   core.info(JSON.stringify(stepsLogs));
   return stepsLogs[step.number - 1];
@@ -22894,7 +22894,7 @@ const getStepLogs = async (jobName, stepName, context) => {
 
 const getPlanStepUrl = async (jobName, stepName, context, offset) => {
   const job = await getJob(jobName, context);
-  const step = job.steps.find(s => s.name === stepName);
+  const step = job.steps.find((s) => s.name === stepName);
   if (!step) {
     return null;
   }
@@ -22904,7 +22904,7 @@ const getPlanStepUrl = async (jobName, stepName, context, offset) => {
 module.exports = {
   initOctokit,
   getStepLogs,
-  getPlanStepUrl
+  getPlanStepUrl,
 };
 
 
@@ -22937,26 +22937,26 @@ const { getStepLogs, getPlanStepUrl, initOctokit } = __webpack_require__(8396);
 const createMessage = __webpack_require__(7480);
 
 const main = async () => {
-  let jobName = core.getInput('plan-job-name').trim();
-  const stepName = core.getInput('plan-step-name').trim();
-  const workspace = core.getInput('workspace').trim();
-  const channel = core.getInput('channel').trim();
-  let githubToken = core.getInput('github-token').trim();
-  let slackBotToken = core.getInput('slack-bot-token').trim();
+  const jobName = core.getInput("plan-job").trim();
+  const stepName = core.getInput("plan-step").trim();
+  const workspace = core.getInput("workspace").trim();
+  const channel = core.getInput("channel").trim();
+  let githubToken = core.getInput("github-token").trim();
+  let slackBotToken = core.getInput("slack-bot-token").trim();
 
   // github token can be also given via env
   githubToken = githubToken || process.env.GITHUB_TOKEN;
-  if (githubToken === '') {
-    throw new Error('Need to provide one of github-token or GITHUB_TOKEN environment variable');
+  if (githubToken === "") {
+    throw new Error("Need to provide one of github-token or GITHUB_TOKEN environment variable");
   }
 
   // slack bot token can be also given via env
   slackBotToken = slackBotToken || process.env.SLACK_BOT_TOKEN;
-  if (slackBotToken === '') {
-    throw new Error('Need to provide one of slack-bot-token or SLACK_BOT_TOKEN environment variable');
+  if (slackBotToken === "") {
+    throw new Error("Need to provide one of slack-bot-token or SLACK_BOT_TOKEN environment variable");
   }
 
-  initOctokit(githubToken)
+  initOctokit(githubToken);
 
   const input = await getStepLogs(jobName, stepName, context);
 
@@ -22968,12 +22968,12 @@ const main = async () => {
 
   await send(channel, slackBotToken, message);
 
-  core.setOutput('outside', jsonString(result.output));
-  core.setOutput('action', jsonString(result.action));
-  core.setOutput('output', jsonString(result.output));
-  core.setOutput('warning', jsonString(result.warning));
-  core.setOutput('summary', jsonString(result.summary));
-  core.setOutput('should-apply', result.shouldApply);
+  core.setOutput("outside", jsonString(result.output));
+  core.setOutput("action", jsonString(result.action));
+  core.setOutput("output", jsonString(result.output));
+  core.setOutput("warning", jsonString(result.warning));
+  core.setOutput("summary", jsonString(result.summary));
+  core.setOutput("should-apply", result.shouldApply);
 };
 
 module.exports = main;
@@ -22987,40 +22987,37 @@ module.exports = main;
 const { findLinesBetween, findSections, anyMatch, findLine } = __webpack_require__(6254);
 const core = __webpack_require__(2186);
 
-
 const getOutsideChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Note: Objects have changed outside of Terraform$/,
-    /^─+/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^ {2}# (?<name>.*) has changed/,
-      /^$/)
+    sections: findSections(lines, /^ {2}# (?<name>.*) has changed/, /^$/),
   };
 };
 
 const getResourceActionSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
+  const { offset, lines } = findLinesBetween(
+    inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/);
+    /^Plan:/
+  );
 
   const patterns = {
     create: /^ {2}# (?<name>.*?) will be created$/,
     update: /^ {2}# (?<name>.*?) will be updated in-place$/,
     replace: /^ {2}# (?<name>.*?) ((is tainted, so )?must be replaced|will be replaced, as requested)$/,
-    destroy: /^ {2}# (?<name>.*?) will be destroyed$/
+    destroy: /^ {2}# (?<name>.*?) will be destroyed$/,
   };
 
   let inside = null;
   let groups = {};
   let str = null;
-  let sections = {
+  const sections = {
     create: [],
     update: [],
     replace: [],
-    destroy: []
+    destroy: [],
   };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -23029,19 +23026,19 @@ const getResourceActionSection = (inputLines) => {
       if (m) {
         sections[inside].push({
           ...groups,
-          str
+          str,
         });
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       } else {
-        str += line + '\n';
+        str += line + "\n";
       }
     } else {
       const m = anyMatch(patterns, line);
       if (m) {
         groups = m.match.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = m.name;
       }
     }
@@ -23050,66 +23047,56 @@ const getResourceActionSection = (inputLines) => {
   if (inside) {
     sections[inside].push({
       ...groups,
-      str
+      str,
     });
   }
   return {
     offset,
-    sections
+    sections,
   };
 };
 
 const getOutputChangeSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^Changes to Outputs:$/,
-    /^[─╷]/);
+  const { offset, lines } = findLinesBetween(inputLines, /^Changes to Outputs:$/, /^[─╷]/);
 
-  const str = lines.join('\n');
+  const str = lines.join("\n");
   return {
     offset,
-    sections: findSections(lines,
-      /^\s{2}[+~-]\s(?<name>.*?)\s=/,
-      /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/,
-      true
-    ),
-    str
+    sections: findSections(lines, /^\s{2}[+~-]\s(?<name>.*?)\s=/, /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/, true),
+    str,
   };
 };
 
 const getWarningSection = (inputLines) => {
-  const { offset, lines } = findLinesBetween(inputLines,
-    /^╷/,
-    /^$/);
+  const { offset, lines } = findLinesBetween(inputLines, /^╷/, /^$/);
 
   return {
     offset,
-    sections: findSections(lines,
-      /^│ Warning:/,
-      /^╵/)
+    sections: findSections(lines, /^│ Warning:/, /^╵/),
   };
 };
 
 const getSummarySection = (inputLines) => {
   {
-    let { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
+    const { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
     if (match) {
       return {
         offset,
         add: parseInt(match[1]),
         change: parseInt(match[2]),
         destroy: parseInt(match[3]),
-        str: match[0]
+        str: match[0],
       };
     }
   }
   {
-    let { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
+    const { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
     return {
       offset,
       add: 0,
       change: 0,
       destroy: 0,
-      str: match ? match[0] : ''
+      str: match ? match[0] : "",
     };
   }
 };
@@ -23117,7 +23104,7 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, '')); // eslint-disable-line no-control-regex
+    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
   }
   core.info(lines);
 
@@ -23130,8 +23117,8 @@ const parse = (rawLines) => {
   const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
-  if (summary.str === '' && output.sections.length > 0) {
-    summary.offset = output.offset
+  if (summary.str === "" && output.sections.length > 0) {
+    summary.offset = output.offset;
     summary.str = `Output Changes: ${output.sections.length}`;
   }
 
@@ -23141,7 +23128,7 @@ const parse = (rawLines) => {
     output,
     warning,
     summary,
-    shouldApply
+    shouldApply,
   };
 };
 
@@ -23156,20 +23143,18 @@ module.exports = parse;
 const core = __webpack_require__(2186);
 const axios = __webpack_require__(6545);
 
-const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
-
+const SLACK_API_URL = "https://slack.com/api/chat.postMessage";
 
 const send = async (channel, token, message) => {
-
   message.channel = channel;
 
   core.debug(message);
 
   const res = await axios.post(SLACK_API_URL, message, {
     headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': `Bearer ${token}`
-    }
+      "Content-Type": "application/json; charset=UTF-8",
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!(res.status === 200 && res.data && res.data.ok)) {
     throw new Error(`failed to send to Slack: status=${res.status}, data=${JSON.stringify(res.data)}`);
@@ -23186,98 +23171,98 @@ module.exports = send;
 /***/ ((module) => {
 
 const GOOD = {
-  color: '#2EB886',
-  icon: ':white_check_mark:'
+  color: "#2EB886",
+  icon: ":white_check_mark:",
 };
 const WARNING = {
-  color: '#DAA038',
-  icon: ':warning:'
+  color: "#DAA038",
+  icon: ":warning:",
 };
 
-const LIMIT = 900
+const LIMIT = 900;
 
 const createMessage = (plan, env, planUrl) => {
   let props = GOOD;
   if (plan.summary.destroy > 0) {
     props = WARNING;
   }
-  let ret = {
-    text: `Succeeded Terraform Plan${env ? ` for ${env}` : ''}`,
+  const ret = {
+    text: `Succeeded Terraform Plan${env ? ` for ${env}` : ""}`,
     blocks: [
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'mrkdwn',
-          text: `:construction: Succeeded Terraform Plan${env ? ` for *\`${env}\`*` : ''}`
-        }
-      }
+          type: "mrkdwn",
+          text: `:construction: Succeeded Terraform Plan${env ? ` for *\`${env}\`*` : ""}`,
+        },
+      },
     ],
     attachments: [
       {
         color: props.color,
         blocks: [
           {
-            type: 'section',
+            type: "section",
             text: {
-              type: 'mrkdwn',
-              text: `${props.icon} *${plan.summary.str}*`
-            }
-          }
-        ]
-      }
-    ]
+              type: "mrkdwn",
+              text: `${props.icon} *${plan.summary.str}*`,
+            },
+          },
+        ],
+      },
+    ],
   };
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map(a => a.name).join('\n');
+    let names = added.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Add*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Add*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map(a => a.name).join('\n');
+    let names = plan.action.sections.update.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Change*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Change*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map(a => a.name).join('\n');
+    let names = destroyed.map((a) => a.name).join("\n");
     if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`
+      names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
     ret.attachments[0].blocks.push({
-      type: 'section',
+      type: "section",
       text: {
-        type: 'mrkdwn',
-        text: `*Destroy*\n\`\`\`${names}\`\`\``
-      }
+        type: "mrkdwn",
+        text: `*Destroy*\n\`\`\`${names}\`\`\``,
+      },
     });
   }
 
   ret.attachments[0].blocks.push({
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
-      text: `<${planUrl}|Click here> to see full logs.`
-    }
+      type: "mrkdwn",
+      text: `<${planUrl}|Click here> to see full logs.`,
+    },
   });
 
   return ret;
@@ -23298,13 +23283,13 @@ const findLine = (lines, pattern) => {
     if (m) {
       return {
         offset: i,
-        match: m
+        match: m,
       };
     }
   }
   return {
     offset: -1,
-    match: null
+    match: null,
   };
 };
 const findLinesBetween = (lines, beginPattern, endPattern) => {
@@ -23329,12 +23314,12 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   }
   return {
     offset,
-    lines: matched
+    lines: matched,
   };
 };
 
 const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
-  let ret = [];
+  const ret = [];
   let groups = {};
   let str = null;
   let inside = false;
@@ -23344,28 +23329,28 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
       if (m) {
         ret.push({
           ...groups,
-          str
+          str,
         });
         if (includeEndPattern) {
           const m = line.match(beginPattern);
           if (m) {
             groups = m.groups;
-            str = line + '\n';
+            str = line + "\n";
             inside = true;
-            continue
+            continue;
           }
         }
         groups = {};
         str = null;
         inside = false;
       } else {
-        str += line + '\n';
+        str += line + "\n";
       }
     } else {
       const m = line.match(beginPattern);
       if (m) {
         groups = m.groups;
-        str = line + '\n';
+        str = line + "\n";
         inside = true;
       }
     }
@@ -23379,7 +23364,7 @@ const anyMatch = (patterns, line) => {
     if (m) {
       return {
         name: k,
-        match: m
+        match: m,
       };
     }
   }
@@ -23387,18 +23372,18 @@ const anyMatch = (patterns, line) => {
 };
 
 const jsonEscape = (key, val) => {
-  if (typeof (val) != 'string') {
+  if (typeof val !== "string") {
     return val;
   }
   return val
-    .replace(/[\\]/g, '\\\\')
-    .replace(/[\"]/g, '\\"')
-    .replace(/[\/]/g, '\\/')
-    .replace(/[\b]/g, '\\b')
-    .replace(/[\f]/g, '\\f')
-    .replace(/[\n]/g, '\\n')
-    .replace(/[\r]/g, '\\r')
-    .replace(/[\t]/g, '\\t');
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\//g, "\\/")
+    .replace(/\b/g, "\\b")
+    .replace(/\f/g, "\\f")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
 };
 
 const jsonString = (obj) => {
@@ -23410,7 +23395,7 @@ module.exports = {
   findLinesBetween,
   findSections,
   anyMatch,
-  jsonString
+  jsonString,
 };
 
 

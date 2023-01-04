@@ -1,27 +1,20 @@
-name: "Terraform Plan Notification by Slack"
-description: "Notify Terraform plan result to Slack"
+name: "Terraform Plan Notification for PR"
+description: "Add Terraform plan result as PR comment"
 branding:
   icon: "cloud"
   color: "purple"
 inputs:
-  plan-job-name:
-    description: "Plan job name"
+  plan-job:
+    description: "Job name where `terraform plan` has been run"
     required: true
-  plan-step-name:
-    description: "Name of the job step that executed Terraform Plan"
+  plan-step:
+    description: "Step name where `terraform plan` has been run"
     required: true
   workspace:
-    description: "Workspace name"
-    required: false
-  channel:
-    description: "Slack Channel ID or name"
-    required: true
+    description: "Terraform workspace name"
   github-token:
     description: "GitHub token"
-    required: false
-  slack-bot-token:
-    description: "Slack bot token"
-    required: false
+    default: ${{ github.token }}
 outputs:
   outside:
     description: "Changes outside section"

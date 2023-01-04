@@ -58,7 +58,7 @@ jobs:
         uses: ./
         with:
           plan-job: plan
-          plan-step: Run terraform plan
+          plan-step: Run terraform plan for dev
           workspace: dev
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           channel: sample-basic-ci

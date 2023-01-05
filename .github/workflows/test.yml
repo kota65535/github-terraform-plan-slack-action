@@ -53,7 +53,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Notify terraform plan result to slack for dev
-        uses: ./
+        uses: kota65535/github-terraform-plan-slack-action@v1
         with:
           plan-job: plan
           plan-step: Run terraform plan for dev
@@ -61,7 +61,7 @@ jobs:
           channel: github
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Notify terraform plan result to slack for prod
-        uses: ./
+        uses: kota65535/github-terraform-plan-slack-action@v1
         with:
           plan-job: plan
           plan-step: Run terraform plan for prod

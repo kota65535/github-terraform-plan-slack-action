@@ -1,4 +1,4 @@
-name: "Terraform Plan Notification by Slack"
+name: "Terraform Plan to Slack"
 description: "Notify Terraform plan result to Slack"
 branding:
   icon: "cloud"

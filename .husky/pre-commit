@@ -3,4 +3,4 @@
 
 npm install
 npm run build 
-git add package-lock.json dist/index.js
+git add dist/index.js

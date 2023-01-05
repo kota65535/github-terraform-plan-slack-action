@@ -1,4 +1,3 @@
-const core = require("@actions/core");
 const { getOctokit } = require("@actions/github");
 const axios = require("axios");
 const yaml = require("yaml");
@@ -109,7 +108,6 @@ const getStepLogs = async (jobName, stepName, context) => {
   }
   stepsLogs.push(lines);
 
-  core.info(JSON.stringify(stepsLogs));
   return stepsLogs[step.number - 1];
 };
 

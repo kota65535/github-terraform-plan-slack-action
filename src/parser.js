@@ -1,5 +1,4 @@
 const { findLinesBetween, findSections, anyMatch, findLine } = require("./util");
-const core = require("@actions/core");
 
 const getOutsideChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
@@ -120,7 +119,6 @@ const parse = (rawLines) => {
   for (const l of rawLines) {
     lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
   }
-  core.info(lines);
 
   const outside = getOutsideChangeSection(lines);
   const action = getResourceActionSection(lines);

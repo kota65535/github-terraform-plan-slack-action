@@ -32,20 +32,13 @@ jobs:
       - name: Select dev workspace
         run: terraform workspace select dev
       - name: Run terraform plan for dev
-        run: terraform plan -out tfplan-dev
+        run: terraform plan
       - name: Select prod workspace
         run: terraform workspace select prod
       - name: Run terraform plan for prod
         run: |
           terraform taint aws_dynamodb_table.test
-          terraform plan -out tfplan-prod
-      - name: Upload plan file
-        uses: actions/upload-artifact@v3
-        with:
-          name: Terraform plan file
-          path: |
-            tfplan-dev
-            tfplan-prod
+          terraform plan
   
   after-plan:
     runs-on: ubuntu-latest

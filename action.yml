@@ -7,7 +7,15 @@ inputs:
   plan-job-name:
     description: "Job name where `terraform plan` has been run"
     required: true
+    deprecationMessage: "use plan-job instead"
   plan-step-name:
+    description: "Step name where `terraform plan` has been run"
+    required: true
+    deprecationMessage: "use plan-step instead"
+  plan-job:
+    description: "Job name where `terraform plan` has been run"
+    required: true
+  plan-step:
     description: "Step name where `terraform plan` has been run"
     required: true
   workspace:

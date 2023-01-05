@@ -31,11 +31,11 @@ const main = async () => {
 
   const input = await getStepLogs(jobName, stepName, context);
 
-  core.debug(input);
+  core.debug(JSON.stringify(input));
 
   const result = parse(input);
 
-  core.debug(result);
+  core.debug(JSON.stringify(result));
 
   const planUrl = await getPlanStepUrl(jobName, stepName, context, result.summary.offset);
 

@@ -22942,9 +22942,9 @@ const main = async () => {
   const jobNameDeprecated = core.getInput("plan-job-name").trim();
   const stepNameDeprecated = core.getInput("plan-step-name").trim();
   const workspace = core.getInput("workspace").trim();
-  const channel = core.getInput("channel").trim();
   let githubToken = core.getInput("github-token").trim();
   const defaultGithubToken = core.getInput("default-github-token").trim();
+  const channel = core.getInput("channel").trim();
   let slackBotToken = core.getInput("slack-bot-token").trim();
   let slackWebhookUrl = core.getInput("slack-webhook-url").trim();
 

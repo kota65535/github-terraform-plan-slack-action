@@ -20,13 +20,13 @@ inputs:
     required: true
   workspace:
     description: "Workspace name"
-  channel:
-    description: "Slack Channel ID or name"
   github-token:
     description: "GitHub token"
   default-github-token:
     description: "Default gitHub token"
     default: ${{ github.token }}
+  channel:
+    description: "Slack Channel ID or name"
   slack-bot-token:
     description: "Slack bot token"
   slack-webhook-url:

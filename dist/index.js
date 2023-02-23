@@ -15792,7 +15792,7 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", jsonString(result.output));
+  core.setOutput("outside", jsonString(result.outside));
   core.setOutput("action", jsonString(result.action));
   core.setOutput("output", jsonString(result.output));
   core.setOutput("warning", jsonString(result.warning));
@@ -16060,6 +16060,14 @@ const createMessage = (plan, env, planUrl) => {
     ],
   };
 
+  ret.attachments[0].blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `<${planUrl}|Click here> to see full logs.`,
+    },
+  });
+
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
     let names = added.map((a) => a.name).join("\n");
@@ -16103,14 +16111,6 @@ const createMessage = (plan, env, planUrl) => {
       },
     });
   }
-
-  ret.attachments[0].blocks.push({
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `<${planUrl}|Click here> to see full logs.`,
-    },
-  });
 
   return ret;
 };

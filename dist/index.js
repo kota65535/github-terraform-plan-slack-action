@@ -15792,7 +15792,7 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", jsonString(result.output));
+  core.setOutput("outside", jsonString(result.outside));
   core.setOutput("action", jsonString(result.action));
   core.setOutput("output", jsonString(result.output));
   core.setOutput("warning", jsonString(result.warning));

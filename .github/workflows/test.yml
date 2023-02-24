@@ -79,9 +79,9 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
         run: |
-          [ '${{ steps.plan-dev.outputs.outside }}' = '{"offset":-1,"sections":[]}' ]
-          [ '${{ steps.plan-dev.outputs.action }}' = '' ]
-          [ '${{ steps.plan-dev.outputs.output }}' = '' ]
-          [ '${{ steps.plan-dev.outputs.warning }}' = '' ]
-          [ '${{ steps.plan-dev.outputs.summary }}' = '' ]
-          [ '${{ steps.plan-dev.outputs.should-apply }}' = 'true' ]
+          [ '${{ steps.plan-prod.outputs.outside }}' = '{"offset":-1,"sections":[]}' ]
+          [ '${{ steps.plan-prod.outputs.action }}' = '' ]
+          [ '${{ steps.plan-prod.outputs.output }}' = '' ]
+          [ '${{ steps.plan-prod.outputs.warning }}' = '' ]
+          [ '${{ steps.plan-prod.outputs.summary }}' = '' ]
+          [ '${{ steps.plan-prod.outputs.should-apply }}' = 'true' ]

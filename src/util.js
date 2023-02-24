@@ -14,6 +14,7 @@ const findLine = (lines, pattern) => {
     match: null,
   };
 };
+
 const findLinesBetween = (lines, beginPattern, endPattern) => {
   const matched = [];
   let found = false;
@@ -40,7 +41,7 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   };
 };
 
-const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
+const findSections = (lines, beginPattern, endPattern, includesEndPattern) => {
   const ret = [];
   let groups = {};
   let str = null;
@@ -53,7 +54,7 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
           ...groups,
           str,
         });
-        if (includeEndPattern) {
+        if (includesEndPattern) {
           const m = line.match(beginPattern);
           if (m) {
             groups = m.groups;
@@ -77,6 +78,13 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
       }
     }
   }
+  // add the final section
+  if (str) {
+    ret.push({
+      ...groups,
+      str,
+    });
+  }
   return ret;
 };
 
@@ -93,29 +101,9 @@ const anyMatch = (patterns, line) => {
   return null;
 };
 
-const jsonEscape = (key, val) => {
-  if (typeof val !== "string") {
-    return val;
-  }
-  return val
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\//g, "\\/")
-    .replace(/\b/g, "\\b")
-    .replace(/\f/g, "\\f")
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t");
-};
-
-const jsonString = (obj) => {
-  return JSON.stringify(obj, jsonEscape);
-};
-
 module.exports = {
   findLine,
   findLinesBetween,
   findSections,
   anyMatch,
-  jsonString,
 };

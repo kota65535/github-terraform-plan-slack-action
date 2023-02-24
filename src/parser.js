@@ -1,4 +1,5 @@
 const { findLinesBetween, findSections, anyMatch, findLine } = require("./util");
+const stripAnsi = require("strip-ansi");
 
 const getOutsideChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
@@ -72,11 +73,9 @@ const getResourceActionSection = (inputLines) => {
 const getOutputChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Changes to Outputs:$/, /^[─╷]/);
 
-  const str = lines.join("\n");
   return {
     offset,
     sections: findSections(lines, /^\s{2}[+~-]\s(?<name>.*?)\s=/, /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/, true),
-    str,
   };
 };
 
@@ -115,10 +114,7 @@ const getSummarySection = (inputLines) => {
 };
 
 const parse = (rawLines) => {
-  const lines = [];
-  for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
-  }
+  const lines = rawLines.map(stripAnsi);
 
   const outside = getOutsideChangeSection(lines);
   const action = getResourceActionSection(lines);

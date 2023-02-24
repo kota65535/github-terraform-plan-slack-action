@@ -125,7 +125,7 @@ const parse = (rawLines) => {
   const warning = getWarningSection(lines);
   const summary = getSummarySection(lines);
 
-  const shouldApply = action.sections.length > 0 || output.sections.length > 0;
+  const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
   if (summary.str === "" && output.sections.length > 0) {

@@ -36,10 +36,6 @@ resource "aws_s3_bucket" "test" {
   }
 }
 
-resource "random_string" "main" {
-  length = 8
-}
-
-output foo {
-  value = random_string.main.result
+output timestamp {
+  value = terraform.workspace == "prod" ? timestamp() : 0
 }

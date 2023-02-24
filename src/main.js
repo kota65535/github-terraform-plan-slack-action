@@ -44,11 +44,12 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", jsonString(result.outside));
-  core.setOutput("action", jsonString(result.action));
-  core.setOutput("output", jsonString(result.output));
-  core.setOutput("warning", jsonString(result.warning));
-  core.setOutput("summary", jsonString(result.summary));
+  console.log(result.outside);
+  core.setOutput("outside", JSON.stringify(result.outside));
+  core.setOutput("action", JSON.stringify(result.action));
+  core.setOutput("output", JSON.stringify(result.output));
+  core.setOutput("warning", JSON.stringify(result.warning));
+  core.setOutput("summary", JSON.stringify(result.summary));
   core.setOutput("should-apply", result.shouldApply);
 };
 

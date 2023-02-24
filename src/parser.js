@@ -1,4 +1,5 @@
 const { findLinesBetween, findSections, anyMatch, findLine } = require("./util");
+const stripAnsi = require("strip-ansi");
 
 const getOutsideChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
@@ -117,7 +118,8 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
+    const sl = stripAnsi(l);
+    lines.push(sl);
   }
 
   const outside = getOutsideChangeSection(lines);
@@ -126,7 +128,7 @@ const parse = (rawLines) => {
   const warning = getWarningSection(lines);
   const summary = getSummarySection(lines);
 
-  const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
+  const shouldApply = action.length > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
   if (summary.str === "" && output.sections.length > 0) {

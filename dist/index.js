@@ -4344,6 +4344,24 @@ exports.request = request;
 
 /***/ }),
 
+/***/ 5063:
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = ({onlyFirst = false} = {}) => {
+	const pattern = [
+		'[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+		'(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))'
+	].join('|');
+
+	return new RegExp(pattern, onlyFirst ? undefined : 'g');
+};
+
+
+/***/ }),
+
 /***/ 4812:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -12312,6 +12330,18 @@ function onceStrict (fn) {
 
 /***/ }),
 
+/***/ 5591:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+const ansiRegex = __nccwpck_require__(5063);
+
+module.exports = string => typeof string === 'string' ? string.replace(ansiRegex(), '') : string;
+
+
+/***/ }),
+
 /***/ 9318:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -15792,11 +15822,12 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", jsonString(result.outside));
-  core.setOutput("action", jsonString(result.action));
-  core.setOutput("output", jsonString(result.output));
-  core.setOutput("warning", jsonString(result.warning));
-  core.setOutput("summary", jsonString(result.summary));
+  console.log(result.outside);
+  core.setOutput("outside", JSON.stringify(result.outside));
+  core.setOutput("action", JSON.stringify(result.action));
+  core.setOutput("output", JSON.stringify(result.output));
+  core.setOutput("warning", JSON.stringify(result.warning));
+  core.setOutput("summary", JSON.stringify(result.summary));
   core.setOutput("should-apply", result.shouldApply);
 };
 
@@ -15809,6 +15840,7 @@ module.exports = main;
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const { findLinesBetween, findSections, anyMatch, findLine } = __nccwpck_require__(6254);
+const stripAnsi = __nccwpck_require__(5591);
 
 const getOutsideChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Note: Objects have changed outside of Terraform$/, /^─+/);
@@ -15927,7 +15959,8 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    lines.push(l.replace(/\x1b\[[0-9;]*m/g, "")); // eslint-disable-line no-control-regex
+    const sl = stripAnsi(l);
+    lines.push(sl);
   }
 
   const outside = getOutsideChangeSection(lines);
@@ -15936,7 +15969,7 @@ const parse = (rawLines) => {
   const warning = getWarningSection(lines);
   const summary = getSummarySection(lines);
 
-  const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
+  const shouldApply = action.length > 0 || output.sections.length > 0;
 
   // Handle empty summary string when we have output changes but no resource changes
   if (summary.str === "" && output.sections.length > 0) {
@@ -16218,31 +16251,11 @@ const anyMatch = (patterns, line) => {
   return null;
 };
 
-const jsonEscape = (key, val) => {
-  if (typeof val !== "string") {
-    return val;
-  }
-  return val
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\//g, "\\/")
-    .replace(/\b/g, "\\b")
-    .replace(/\f/g, "\\f")
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t");
-};
-
-const jsonString = (obj) => {
-  return JSON.stringify(obj, jsonEscape);
-};
-
 module.exports = {
   findLine,
   findLinesBetween,
   findSections,
   anyMatch,
-  jsonString,
 };
 
 

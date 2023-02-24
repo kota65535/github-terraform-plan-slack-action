@@ -93,29 +93,9 @@ const anyMatch = (patterns, line) => {
   return null;
 };
 
-const jsonEscape = (key, val) => {
-  if (typeof val !== "string") {
-    return val;
-  }
-  return val
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\//g, "\\/")
-    .replace(/\b/g, "\\b")
-    .replace(/\f/g, "\\f")
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t");
-};
-
-const jsonString = (obj) => {
-  return JSON.stringify(obj, jsonEscape);
-};
-
 module.exports = {
   findLine,
   findLinesBetween,
   findSections,
   anyMatch,
-  jsonString,
 };

@@ -27,3 +27,19 @@ resource "aws_dynamodb_table" "test" {
     type = "S"
   }
 }
+
+resource "aws_s3_bucket" "test" {
+  bucket = "github-action-test-${terraform.workspace}"
+  acl    = "private"
+  versioning {
+    enabled = true
+  }
+}
+
+resource "random_string" "main" {
+  length = 8
+}
+
+output foo {
+  value = random_string.main.result
+}

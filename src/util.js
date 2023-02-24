@@ -14,6 +14,7 @@ const findLine = (lines, pattern) => {
     match: null,
   };
 };
+
 const findLinesBetween = (lines, beginPattern, endPattern) => {
   const matched = [];
   let found = false;
@@ -40,7 +41,7 @@ const findLinesBetween = (lines, beginPattern, endPattern) => {
   };
 };
 
-const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
+const findSections = (lines, beginPattern, endPattern, includesEndPattern) => {
   const ret = [];
   let groups = {};
   let str = null;
@@ -53,7 +54,7 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
           ...groups,
           str,
         });
-        if (includeEndPattern) {
+        if (includesEndPattern) {
           const m = line.match(beginPattern);
           if (m) {
             groups = m.groups;
@@ -76,6 +77,13 @@ const findSections = (lines, beginPattern, endPattern, includeEndPattern) => {
         inside = true;
       }
     }
+  }
+  // add the final section
+  if (str) {
+    ret.push({
+      ...groups,
+      str,
+    });
   }
   return ret;
 };

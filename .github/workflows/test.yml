@@ -63,12 +63,12 @@ jobs:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Assertion
         run: |
-          echo '${{ steps.plan-dev.outputs.outside }}'
-          echo '${{ steps.plan-dev.outputs.action }}'
-          echo '${{ steps.plan-dev.outputs.output }}'
-          echo '${{ steps.plan-dev.outputs.warning }}'
-          echo '${{ steps.plan-dev.outputs.summary }}'
-          echo '${{ steps.plan-dev.outputs.should-apply }}'
+          [ '${{ steps.plan-dev.outputs.outside }}' -eq '{"offset":-1,"sections":[]}' ]
+          [ '${{ steps.plan-dev.outputs.action }}' -eq '{"offset":-1,"sections":{"create":[],"update":[],"replace":[],"destroy":[]}}' ]
+          [ '${{ steps.plan-dev.outputs.output }}' -eq '{"offset":-1,"sections":[]}' ]
+          [ '${{ steps.plan-dev.outputs.warning }}' -eq '{"offset":20,"sections":[{"str":"│ Warning: Argument is deprecated\n│ \n│   with aws_s3_bucket.test,\n│   on main.tf line 31, in resource \"aws_s3_bucket\" \"test\":\n│   31: resource \"aws_s3_bucket\" \"test\" {\n│ \n│ Use the aws_s3_bucket_versioning resource instead\n│ \n│ (and 3 more similar warnings elsewhere)\n"}]}' ]
+          [ '${{ steps.plan-dev.outputs.summary }}' -eq '{"offset":16,"add":0,"change":0,"destroy":0,"str":"No changes. Your infrastructure matches the configuration."}' ]
+          [ '${{ steps.plan-dev.outputs.should-apply }}' -eq 'true' ]
       - name: Notify terraform plan result to slack for prod
         uses: ./
         id: plan-prod

@@ -63,6 +63,7 @@ jobs:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Assertion
         run: |
+          set -x
           [ '${{ steps.plan-dev.outputs.outside }}' = '{"offset":-1,"sections":[]}' ]
           [ '${{ steps.plan-dev.outputs.action }}' = '{"offset":-1,"sections":{"create":[],"update":[],"replace":[],"destroy":[]}}' ]
           [ '${{ steps.plan-dev.outputs.output }}' = '{"offset":-1,"sections":[]}' ]
@@ -79,6 +80,7 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
         run: |
+          set -x
           [ '${{ steps.plan-prod.outputs.outside }}' = '{"offset":-1,"sections":[]}' ]
           [ '${{ steps.plan-prod.outputs.action }}' = ''{"offset":19,"sections":{"create":[],"update":[],"replace":[{"name":"aws_dynamodb_table.test","str":"  # aws_dynamodb_table.test is tainted, so must be replaced\n-/+ resource \"aws_dynamodb_table\" \"test\" {\n      ~ arn              = \"arn:aws:dynamodb:ap-northeast-1:***:table/github-action-test-prod\" -> (known after apply)\n      ~ id               = \"github-action-test-prod\" -> (known after apply)\n        name             = \"github-action-test-prod\"\n      ~ read_capacity    = 0 -> (known after apply)\n      + stream_arn       = (known after apply)\n      - stream_enabled   = false -> null\n      + stream_label     = (known after apply)\n      + stream_view_type = (known after apply)\n      - tags             = {} -> null\n      ~ tags_all         = {} -> (known after apply)\n      ~ write_capacity   = 0 -> (known after apply)\n        # (2 unchanged attributes hidden)\n\n      ~ point_in_time_recovery {\n          ~ enabled = false -> (known after apply)\n        }\n\n      + server_side_encryption {\n          + enabled     = (known after apply)\n          + kms_key_arn = (known after apply)\n        }\n\n      ~ ttl {\n          + attribute_name = (known after apply)\n          ~ enabled        = false -> (known after apply)\n        }\n\n        # (1 unchanged block hidden)\n    }\n\n"}],"destroy":[]}}'' ]
           [ '${{ steps.plan-prod.outputs.output }}' = '{"offset":-1,"sections":[]}' ]

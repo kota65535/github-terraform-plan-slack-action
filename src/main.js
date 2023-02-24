@@ -2,7 +2,6 @@ const core = require("@actions/core");
 const { context } = require("@actions/github");
 const parse = require("./parser");
 const { sendByBotToken, sendByWebhookUrl } = require("./slack");
-const { jsonString } = require("./util");
 const { getStepLogs, getPlanStepUrl, initOctokit } = require("./github");
 const createMessage = require("./slack_message");
 
@@ -44,7 +43,6 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  console.log(result.outside);
   core.setOutput("outside", JSON.stringify(result.outside));
   core.setOutput("action", JSON.stringify(result.action));
   core.setOutput("output", JSON.stringify(result.output));

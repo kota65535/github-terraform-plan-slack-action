@@ -15780,7 +15780,6 @@ const core = __nccwpck_require__(2186);
 const { context } = __nccwpck_require__(5438);
 const parse = __nccwpck_require__(1809);
 const { sendByBotToken, sendByWebhookUrl } = __nccwpck_require__(9393);
-const { jsonString } = __nccwpck_require__(6254);
 const { getStepLogs, getPlanStepUrl, initOctokit } = __nccwpck_require__(8396);
 const createMessage = __nccwpck_require__(7480);
 
@@ -15822,7 +15821,6 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  console.log(result.outside);
   core.setOutput("outside", JSON.stringify(result.outside));
   core.setOutput("action", JSON.stringify(result.action));
   core.setOutput("output", JSON.stringify(result.output));

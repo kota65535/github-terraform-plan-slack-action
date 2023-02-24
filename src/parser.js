@@ -118,8 +118,7 @@ const getSummarySection = (inputLines) => {
 const parse = (rawLines) => {
   const lines = [];
   for (const l of rawLines) {
-    const sl = stripAnsi(l);
-    lines.push(sl);
+    lines.push(stripAnsi(l));
   }
 
   const outside = getOutsideChangeSection(lines);

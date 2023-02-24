@@ -15914,11 +15914,9 @@ const getResourceActionSection = (inputLines) => {
 const getOutputChangeSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(inputLines, /^Changes to Outputs:$/, /^[─╷]/);
 
-  const str = lines.join("\n");
   return {
     offset,
     sections: findSections(lines, /^\s{2}[+~-]\s(?<name>.*?)\s=/, /(^\s{2}[+~-]\s(?<name>.*?)\s=)|(^$)/, true),
-    str,
   };
 };
 

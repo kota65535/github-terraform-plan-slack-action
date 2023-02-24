@@ -62,7 +62,7 @@ jobs:
           channel: github
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Assertion
-        run:
+        run: |
           echo "${{ steps.plan-dev.outputs.outside }}"
           echo "${{ steps.plan-dev.outputs.action }}"
           echo "${{ steps.plan-dev.outputs.output }}"
@@ -78,7 +78,7 @@ jobs:
           workspace: prod
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
-        run:
+        run: |
           echo "${{ steps.plan-prod.outputs.outside }}"
           echo "${{ steps.plan-prod.outputs.action }}"
           echo "${{ steps.plan-prod.outputs.output }}"

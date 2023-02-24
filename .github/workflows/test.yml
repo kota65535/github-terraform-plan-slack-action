@@ -54,16 +54,34 @@ jobs:
         uses: actions/checkout@v3
       - name: Notify terraform plan result to slack for dev
         uses: ./
+        id: plan-dev
         with:
           plan-job: plan
           plan-step: Run terraform plan for dev
           workspace: dev
           channel: github
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Assertion
+        run:
+          echo "${{ steps.plan-dev.outputs.outside }}"
+          echo "${{ steps.plan-dev.outputs.action }}"
+          echo "${{ steps.plan-dev.outputs.output }}"
+          echo "${{ steps.plan-dev.outputs.warning }}"
+          echo "${{ steps.plan-dev.outputs.summary }}"
+          echo "${{ steps.plan-dev.outputs.should-apply }}"
       - name: Notify terraform plan result to slack for prod
         uses: ./
+        id: plan-prod
         with:
           plan-job: plan
           plan-step: Run terraform plan for prod
           workspace: prod
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Assertion
+        run:
+          echo "${{ steps.plan-prod.outputs.outside }}"
+          echo "${{ steps.plan-prod.outputs.action }}"
+          echo "${{ steps.plan-prod.outputs.output }}"
+          echo "${{ steps.plan-prod.outputs.warning }}"
+          echo "${{ steps.plan-prod.outputs.summary }}"
+          echo "${{ steps.plan-prod.outputs.should-apply }}"

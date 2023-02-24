@@ -15953,10 +15953,7 @@ const getSummarySection = (inputLines) => {
 };
 
 const parse = (rawLines) => {
-  const lines = [];
-  for (const l of rawLines) {
-    lines.push(stripAnsi(l));
-  }
+  const lines = rawLines.map(stripAnsi);
 
   const outside = getOutsideChangeSection(lines);
   const action = getResourceActionSection(lines);

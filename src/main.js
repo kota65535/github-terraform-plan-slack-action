@@ -2,7 +2,6 @@ const core = require("@actions/core");
 const { context } = require("@actions/github");
 const parse = require("./parser");
 const { sendByBotToken, sendByWebhookUrl } = require("./slack");
-const { jsonString } = require("./util");
 const { getStepLogs, getPlanStepUrl, initOctokit } = require("./github");
 const createMessage = require("./slack_message");
 
@@ -44,11 +43,11 @@ const main = async () => {
     await sendByWebhookUrl(slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", jsonString(result.outside));
-  core.setOutput("action", jsonString(result.action));
-  core.setOutput("output", jsonString(result.output));
-  core.setOutput("warning", jsonString(result.warning));
-  core.setOutput("summary", jsonString(result.summary));
+  core.setOutput("outside", JSON.stringify(result.outside));
+  core.setOutput("action", JSON.stringify(result.action));
+  core.setOutput("output", JSON.stringify(result.output));
+  core.setOutput("warning", JSON.stringify(result.warning));
+  core.setOutput("summary", JSON.stringify(result.summary));
   core.setOutput("should-apply", result.shouldApply);
 };
 

@@ -27,3 +27,15 @@ resource "aws_dynamodb_table" "test" {
     type = "S"
   }
 }
+
+resource "aws_s3_bucket" "test" {
+  bucket = "github-action-test-${terraform.workspace}"
+  acl    = "private"
+  versioning {
+    enabled = true
+  }
+}
+
+output timestamp {
+  value = terraform.workspace == "prod" ? timestamp() : 0
+}

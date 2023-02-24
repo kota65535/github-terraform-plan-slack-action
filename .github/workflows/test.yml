@@ -63,12 +63,12 @@ jobs:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Assertion
         run: |
-          echo "${{ steps.plan-dev.outputs.outside }}"
-          echo "${{ steps.plan-dev.outputs.action }}"
-          echo "${{ steps.plan-dev.outputs.output }}"
-          echo "${{ steps.plan-dev.outputs.warning }}"
-          echo "${{ steps.plan-dev.outputs.summary }}"
-          echo "${{ steps.plan-dev.outputs.should-apply }}"
+          echo '${{ steps.plan-dev.outputs.outside }}'
+          echo '${{ steps.plan-dev.outputs.action }}'
+          echo '${{ steps.plan-dev.outputs.output }}'
+          echo '${{ steps.plan-dev.outputs.warning }}'
+          echo '${{ steps.plan-dev.outputs.summary }}'
+          echo '${{ steps.plan-dev.outputs.should-apply }}'
       - name: Notify terraform plan result to slack for prod
         uses: ./
         id: plan-prod
@@ -79,9 +79,9 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
         run: |
-          echo "${{ steps.plan-prod.outputs.outside }}"
-          echo "${{ steps.plan-prod.outputs.action }}"
-          echo "${{ steps.plan-prod.outputs.output }}"
-          echo "${{ steps.plan-prod.outputs.warning }}"
-          echo "${{ steps.plan-prod.outputs.summary }}"
-          echo "${{ steps.plan-prod.outputs.should-apply }}"
+          echo '${{ steps.plan-prod.outputs.outside }}'
+          echo '${{ steps.plan-prod.outputs.action }}'
+          echo '${{ steps.plan-prod.outputs.output }}'
+          echo '${{ steps.plan-prod.outputs.warning }}'
+          echo '${{ steps.plan-prod.outputs.summary }}'
+          echo '${{ steps.plan-prod.outputs.should-apply }}'

@@ -68,7 +68,7 @@ jobs:
           [ '${{ steps.plan-dev.outputs.output }}' = '{"offset":-1,"sections":[]}' ]
           [ '${{ steps.plan-dev.outputs.warning }}' = '{"offset":20,"sections":[{"str":"│ Warning: Argument is deprecated\n│ \n│   with aws_s3_bucket.test,\n│   on main.tf line 31, in resource \"aws_s3_bucket\" \"test\":\n│   31: resource \"aws_s3_bucket\" \"test\" {\n│ \n│ Use the aws_s3_bucket_versioning resource instead\n│ \n│ (and 3 more similar warnings elsewhere)\n"}]}' ]
           [ '${{ steps.plan-dev.outputs.summary }}' = '{"offset":16,"add":0,"change":0,"destroy":0,"str":"No changes. Your infrastructure matches the configuration."}' ]
-          [ '${{ steps.plan-dev.outputs.should-apply }}' = 'true' ]
+          [ '${{ steps.plan-dev.outputs.should-apply }}' = 'false' ]
       - name: Notify terraform plan result to slack for prod
         uses: ./
         id: plan-prod
@@ -79,9 +79,9 @@ jobs:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
         run: |
-          echo '${{ steps.plan-prod.outputs.outside }}'
-          echo '${{ steps.plan-prod.outputs.action }}'
-          echo '${{ steps.plan-prod.outputs.output }}'
-          echo '${{ steps.plan-prod.outputs.warning }}'
-          echo '${{ steps.plan-prod.outputs.summary }}'
-          echo '${{ steps.plan-prod.outputs.should-apply }}'
+          [ '${{ steps.plan-dev.outputs.outside }}' = '{"offset":-1,"sections":[]}' ]
+          [ '${{ steps.plan-dev.outputs.action }}' = '' ]
+          [ '${{ steps.plan-dev.outputs.output }}' = '' ]
+          [ '${{ steps.plan-dev.outputs.warning }}' = '' ]
+          [ '${{ steps.plan-dev.outputs.summary }}' = '' ]
+          [ '${{ steps.plan-dev.outputs.should-apply }}' = 'true' ]

@@ -1,31 +1,63 @@
 const { getOctokit } = require("@actions/github");
 const axios = require("axios");
 const yaml = require("yaml");
-const fs = require("fs");
+const path = require("path");
 
 let octokit;
 
 const initOctokit = (token) => {
-  octokit = getOctokit(token);
+  return (octokit = getOctokit(token));
+};
+
+const getWorkflows = async (context) => {
+  let ret = [];
+  let page = 1;
+  let total = 0;
+  do {
+    const res = await octokit.rest.actions.listRepoWorkflows({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      per_page: 100,
+      page,
+    });
+    ret = ret.concat(res.data.workflows);
+    total = res.data.total_count;
+    page += 1;
+  } while (ret.length < total);
+  return ret;
 };
 
 const getWorkflow = async (context) => {
-  const res = await octokit.rest.actions.listRepoWorkflows({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    per_page: 100,
-  });
-  return res.data.workflows.find((w) => w.name === context.workflow);
+  const workflows = await getWorkflows(context);
+  const workflow = workflows.find((w) => w.name === context.workflow);
+  if (!workflow) {
+    throw new Error(`failed to get workflow with name: ${context.workflow}`);
+  }
+  return workflow;
+};
+
+const getJobs = async (context) => {
+  let ret = [];
+  let page = 1;
+  let total = 0;
+  do {
+    const res = await octokit.rest.actions.listJobsForWorkflowRun({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      run_id: context.runId,
+      per_page: 100,
+      page,
+    });
+    ret = ret.concat(res.data.jobs);
+    total = res.data.total_count;
+    page += 1;
+  } while (ret.length < total);
+  return ret;
 };
 
 const getJob = async (jobName, context) => {
-  // get job ID and step number
-  const res = await octokit.rest.actions.listJobsForWorkflowRun({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    run_id: context.runId,
-  });
-  const job = res.data.jobs.find((j) => j.name === jobName);
+  const jobs = await getJobs(context);
+  const job = jobs.find((j) => j.name === jobName);
   if (!job) {
     throw new Error(`failed to get job with name: ${jobName}`);
   }
@@ -46,26 +78,36 @@ const getJobLogs = async (job, context) => {
   return res2.data.split("\r\n");
 };
 
-const getNumActionsOfStepRecursive = (step) => {
+const getContent = async (path, context) => {
+  const res = await octokit.rest.repos.getContent({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    path,
+  });
+  return Buffer.from(res.data.content, res.data.encoding).toString();
+};
+
+const getNumActionsOfStepsRecursive = async (step, context) => {
   let ret = 1;
-  if (step.uses && fs.existsSync(step.uses)) {
-    const actionFile = fs.readFileSync(`${step.uses}/action.yml`, { encoding: "utf-8" });
+  // handle local composite actions
+  if (step.uses && step.uses.match(/^(\.\/)?\.github\/actions/)) {
+    const actionFile = await getContent(path.normalize(`${step.uses}/action.yml`), context);
     const actionYaml = yaml.parse(actionFile);
     for (const s of actionYaml.runs.steps) {
-      ret += getNumActionsOfStepRecursive(s);
+      ret += await getNumActionsOfStepsRecursive(s, context);
     }
   }
   return ret;
 };
 
-const getNumStepActions = async (jobName, context) => {
+const getNumActionsOfSteps = async (jobName, context) => {
   const workflow = await getWorkflow(context);
-  const workflowFile = fs.readFileSync(workflow.path, { encoding: "utf-8" });
+  const workflowFile = await getContent(workflow.path, context);
   const workflowYaml = yaml.parse(workflowFile);
   const steps = workflowYaml.jobs[jobName].steps;
   const numActions = [1];
   for (const s of steps) {
-    numActions.push(getNumActionsOfStepRecursive(s));
+    numActions.push(await getNumActionsOfStepsRecursive(s, context));
   }
   return numActions;
 };
@@ -78,7 +120,7 @@ const getStepLogs = async (jobName, stepName, context) => {
   }
 
   const logs = await getJobLogs(job, context);
-  const numStepActions = await getNumStepActions(jobName, context);
+  const numStepActions = await getNumActionsOfSteps(jobName, context);
 
   // divide logs by each step
   const stepsLogs = [];
@@ -124,4 +166,7 @@ module.exports = {
   initOctokit,
   getStepLogs,
   getPlanStepUrl,
+  getNumActionsOfSteps,
+  getWorkflow,
+  getJob,
 };

@@ -50,8 +50,6 @@ jobs:
     needs:
       - plan
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Notify terraform plan result to slack for dev
         uses: kota65535/github-terraform-plan-slack-action@v1
         id: plan-dev

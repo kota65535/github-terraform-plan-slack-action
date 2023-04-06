@@ -15752,17 +15752,20 @@ const getContent = async (path, context) => {
 
 const getNumActionsOfStepsRecursive = async (step, context) => {
   let ret = 1;
-  // handle local composite actions
-  if (step.uses && step.uses.includes(".github/actions")) {
-    const actionDir = await getContent(path.normalize(step.uses), context);
-    if (!Array.isArray(actionDir)) {
-      return ret;
+  if (step.uses) {
+    // handle local composite actions
+    if (step.uses.startsWith("./.github/actions")) {
+      const actionDir = await getContent(path.normalize(step.uses), context);
+      if (!Array.isArray(actionDir)) {
+        return ret;
+      }
+      const actionFile = actionDir.find((d) => d.name.match(/action.ya?ml/));
+      const actionYaml = yaml.parse(actionFile.content);
+      for (const s of actionYaml.runs.steps) {
+        ret += await getNumActionsOfStepsRecursive(s, context);
+      }
     }
-    const actionFile = actionDir.find((d) => d.name.match(/action.ya?ml/));
-    const actionYaml = yaml.parse(actionFile.content);
-    for (const s of actionYaml.runs.steps) {
-      ret += await getNumActionsOfStepsRecursive(s, context);
-    }
+    // TODO: handle remote composite actions
   }
   return ret;
 };

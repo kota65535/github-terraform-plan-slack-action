@@ -5,9 +5,10 @@
   "main": "src/index.js",
   "scripts": {
     "prepare": "husky install",
+    "test": "nyc --reporter=html mocha 'test/**/*.js'",
     "build": "ncc build src/index.js",
-    "lint": "eslint --fix \"src/**/*.js\"",
-    "format": "prettier --write \"src/**/*.js\""
+    "lint": "eslint --fix 'src/**/*.js'",
+    "format": "prettier --write 'src/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -29,10 +30,14 @@
   },
   "devDependencies": {
     "@vercel/ncc": "0.36.0",
+    "chai": "4.3.7",
+    "dotenv": "16.0.3",
     "eslint": "8.31.0",
     "eslint-config-prettier": "8.6.0",
     "eslint-config-standard": "17.0.0",
     "husky": "8.0.3",
+    "mocha": "10.2.0",
+    "nyc": "15.1.0",
     "prettier": "2.8.1"
   }
 }

@@ -66,16 +66,17 @@ const getJob = async (jobName, context) => {
 
 const getJobLogs = async (job, context) => {
   // get link for job logs
-  const res = await octokit.rest.actions.downloadJobLogsForWorkflowRun({
+  const res1 = await octokit.rest.actions.downloadJobLogsForWorkflowRun({
     owner: context.repo.owner,
     repo: context.repo.repo,
     job_id: job.id,
   });
 
   // get job logs
-  const res2 = await axios.get(res.url);
+  const res2 = await axios.get(res1.url);
 
-  return res2.data.split("\r\n");
+  // remove CRs if exists before splitting
+  return res2.data.replace(/\r/g, "").split("\n");
 };
 
 const getContent = async (path, context) => {

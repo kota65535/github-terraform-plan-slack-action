@@ -50,10 +50,8 @@ jobs:
     needs:
       - plan
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Notify terraform plan result to slack for dev
-        uses: ./
+        uses: kota65535/github-terraform-plan-slack-action@v1
         id: plan-dev
         with:
           plan-job: plan
@@ -71,7 +69,7 @@ jobs:
           [ '${{ steps.plan-dev.outputs.summary }}' = '{"offset":15,"add":0,"change":0,"destroy":0,"str":"No changes. Your infrastructure matches the configuration."}' ]
           [ '${{ steps.plan-dev.outputs.should-apply }}' = 'false' ]
       - name: Notify terraform plan result to slack for prod
-        uses: ./
+        uses: kota65535/github-terraform-plan-slack-action@v1
         id: plan-prod
         with:
           plan-job: plan

@@ -15753,7 +15753,7 @@ const getContent = async (path, context) => {
 const getNumActionsOfStepsRecursive = async (step, context) => {
   let ret = 1;
   // handle local composite actions
-  if (step.uses && step.uses.match(/^(\.\/)?\.github\/actions/)) {
+  if (step.uses && step.uses.includes(".github/actions")) {
     const actionDir = await getContent(path.normalize(step.uses), context);
     if (!Array.isArray(actionDir)) {
       return ret;

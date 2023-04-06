@@ -15723,20 +15723,43 @@ const getJobLogs = async (job, context) => {
 };
 
 const getContent = async (path, context) => {
-  const res = await octokit.rest.repos.getContent({
+  const fileOrDir = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
     repo: context.repo.repo,
     path,
   });
-  return Buffer.from(res.data.content, res.data.encoding).toString();
+  let ret;
+  if (Array.isArray(fileOrDir.data)) {
+    const files = await Promise.all(
+      fileOrDir.data.map((d) =>
+        octokit.rest.repos.getContent({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          path: d.path,
+        })
+      )
+    );
+    ret = files.map((f) => f.data);
+    ret.forEach((r) => {
+      r.content = Buffer.from(r.content, "base64").toString();
+    });
+  } else {
+    ret = fileOrDir.data;
+    ret.content = Buffer.from(ret.content, "base64").toString();
+  }
+  return ret;
 };
 
 const getNumActionsOfStepsRecursive = async (step, context) => {
   let ret = 1;
   // handle local composite actions
   if (step.uses && step.uses.match(/^(\.\/)?\.github\/actions/)) {
-    const actionFile = await getContent(path.normalize(`${step.uses}/action.yml`), context);
-    const actionYaml = yaml.parse(actionFile);
+    const actionDir = await getContent(path.normalize(step.uses), context);
+    if (!Array.isArray(actionDir)) {
+      return ret;
+    }
+    const actionFile = actionDir.find((d) => d.name.match(/action.ya?ml/));
+    const actionYaml = yaml.parse(actionFile.content);
     for (const s of actionYaml.runs.steps) {
       ret += await getNumActionsOfStepsRecursive(s, context);
     }
@@ -15747,7 +15770,10 @@ const getNumActionsOfStepsRecursive = async (step, context) => {
 const getNumActionsOfSteps = async (jobName, context) => {
   const workflow = await getWorkflow(context);
   const workflowFile = await getContent(workflow.path, context);
-  const workflowYaml = yaml.parse(workflowFile);
+  if (Array.isArray(workflowFile)) {
+    throw new Error("workflow should be a file");
+  }
+  const workflowYaml = yaml.parse(workflowFile.content);
   const steps = workflowYaml.jobs[jobName].steps;
   const numActions = [1];
   for (const s of steps) {
@@ -15813,6 +15839,7 @@ module.exports = {
   getNumActionsOfSteps,
   getWorkflow,
   getJob,
+  getContent,
 };
 
 

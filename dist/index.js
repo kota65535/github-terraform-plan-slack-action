@@ -15719,7 +15719,8 @@ const getJobLogs = async (job, context) => {
   // get job logs
   const res2 = await axios.get(res.url);
 
-  return res2.data.split("\r\n");
+  // remove CRs if exists before splitting
+  return res2.data.replace(/\r/g, "").split("\n");
 };
 
 const getContent = async (path, context) => {

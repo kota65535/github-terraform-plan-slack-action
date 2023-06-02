@@ -78,7 +78,7 @@ jobs:
           [ '${{ steps.plan-dev.outputs.should-apply }}' = 'false' ]
           RET=$((RET+$?))
           
-          [[ $RET -ne 0 ]] && exit 1
+          [[ $RET -eq 0 ]]
       
       - name: Notify terraform plan result to slack for prod
         uses: ./
@@ -105,5 +105,5 @@ jobs:
           [ '${{ steps.plan-prod.outputs.should-apply }}' = 'true' ]
           RET=$((RET+$?))
           
-          [[ $RET -ne 0 ]] && exit 1
+          [[ $RET -eq 0 ]]
           

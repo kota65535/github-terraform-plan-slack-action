@@ -1,0 +1,9 @@
+{
+  "offset": 52,
+  "sections": [
+    {
+      "name": "timestamp",
+      "str": "  ~ timestamp = \"2023-02-24T17:35:29Z\" -> (known after apply)\n"
+    }
+  ]
+}

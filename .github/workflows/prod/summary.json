@@ -1,0 +1,7 @@
+{
+  "offset": 50,
+  "add": 1,
+  "change": 0,
+  "destroy": 1,
+  "str": "Plan: 1 to add, 0 to change, 1 to destroy."
+}

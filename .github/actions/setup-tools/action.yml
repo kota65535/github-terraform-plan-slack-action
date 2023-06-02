@@ -9,7 +9,6 @@ inputs:
     description: AWS secret access key
     required: true
 
-
 runs:
   using: "composite"
   steps:
@@ -20,15 +19,13 @@ runs:
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: ap-northeast-1
     - name: Get tool versions
-      run: |
-        set -x
-        echo "TERRAFORM_VERSION=$(cat .tool-versions | perl -ne 'print $1 if /^terraform (.*)$/')" >> $GITHUB_ENV
-      shell: bash
+      uses: kota65535/github-asdf-parse-action@v1
+      id: versions
     - name: Setup terraform
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: ${{ env.TERRAFORM_VERSION }}
+        terraform_version: ${{ steps.versions.outputs.terraform }}
     - name: Setup node (cf. https://github.com/hashicorp/setup-terraform/issues/84)
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: ${{ steps.versions.outputs.nodejs }}

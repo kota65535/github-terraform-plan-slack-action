@@ -1,4 +1,4 @@
-const { getNumActionsOfSteps, initOctokit, getWorkflow, getJob, getContent } = require("../src/github");
+const { initOctokit, getWorkflow, getJob, getContent, getNumActionsOfSteps } = require("../src/github");
 const assert = require("chai").assert;
 require("dotenv").config();
 
@@ -12,7 +12,7 @@ describe("github", () => {
     const workflow = await getWorkflow({
       repo: {
         owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
+        repo: "github-terraform-plan-comment-action",
       },
       workflow: "Test",
     });
@@ -24,9 +24,9 @@ describe("github", () => {
     const job = await getJob("plan", {
       repo: {
         owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
+        repo: "github-terraform-plan-comment-action",
       },
-      runId: "4570557599",
+      runId: "4625781242",
     });
     assert.isNotNull(job);
     assert.isNotNull(job.name === "plan");
@@ -36,7 +36,7 @@ describe("github", () => {
     const file = await getContent(".github/actions/setup-tools/action.yml", {
       repo: {
         owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
+        repo: "github-terraform-plan-comment-action",
       },
     });
     assert.isNotNull(file);
@@ -48,7 +48,7 @@ describe("github", () => {
     const files = await getContent(".github/workflows", {
       repo: {
         owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
+        repo: "github-terraform-plan-comment-action",
       },
     });
     assert.isNotNull(files);
@@ -60,7 +60,7 @@ describe("github", () => {
     const numActions = await getNumActionsOfSteps("plan", {
       repo: {
         owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
+        repo: "github-terraform-plan-comment-action",
       },
       workflow: "Test",
     });

@@ -1,6 +1,11 @@
 name: Test
 
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
   pull_request:
 
 
@@ -32,7 +37,7 @@ jobs:
         run: |
           npm install
           npm run test
-  
+
   plan:
     runs-on: ubuntu-latest
     defaults:
@@ -75,6 +80,8 @@ jobs:
           plan-job: plan
           plan-step: Run terraform plan for dev
           workspace: dev
+          channel: github
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Assertion
         run: |
           set -x +e
@@ -101,6 +108,7 @@ jobs:
           plan-job: plan
           plan-step: Run terraform plan for prod
           workspace: prod
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion
         run: |
           set -x +e

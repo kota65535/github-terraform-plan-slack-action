@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Notify terraform plan result as PR comment for dev
+      - name: Notify terraform plan result to slack for dev
         uses: ./
         id: plan-dev
         with:
@@ -101,7 +101,7 @@ jobs:
           
           [[ $RET -eq 0 ]]
           
-      - name: Notify terraform plan result as PR comment for prod
+      - name: Notify terraform plan result to slack for prod
         uses: ./
         id: plan-prod
         with:

@@ -18,6 +18,26 @@ jobs:
         env:
           JSON: ${{ toJSON(github) }}
   
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./.github/workflows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup tools
+        uses: ./.github/actions/setup-tools
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run test
+        run: |
+          npm install
+          npm run test
+
   plan:
     runs-on: ubuntu-latest
     defaults:
@@ -32,6 +52,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run terraform init
         run: terraform init
       - name: Select dev workspace
@@ -44,7 +65,7 @@ jobs:
         run: |
           terraform taint aws_dynamodb_table.test
           terraform plan
-  
+
   after-plan:
     runs-on: ubuntu-latest
     needs:
@@ -79,7 +100,7 @@ jobs:
           RET=$((RET+$?))
           
           [[ $RET -eq 0 ]]
-      
+          
       - name: Notify terraform plan result to slack for prod
         uses: ./
         id: plan-prod
@@ -106,4 +127,3 @@ jobs:
           RET=$((RET+$?))
           
           [[ $RET -eq 0 ]]
-          

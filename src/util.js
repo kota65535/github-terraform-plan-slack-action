@@ -1,3 +1,15 @@
+const core = require("@actions/core");
+
+function toJson(obj) {
+  return JSON.stringify(obj, null, 2);
+}
+
+function logJson(message, obj) {
+  core.startGroup(message);
+  core.info(toJson(obj));
+  core.endGroup();
+}
+
 const findLine = (lines, pattern) => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -102,6 +114,7 @@ const anyMatch = (patterns, line) => {
 };
 
 module.exports = {
+  logJson,
   findLine,
   findLinesBetween,
   findSections,

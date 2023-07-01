@@ -1,4 +1,4 @@
-const { getNumActionsOfSteps, initOctokit, getWorkflow, getJob, getContent } = require("../src/github");
+const { initOctokit, getWorkflow, getJob, getContent, getNumActionsOfSteps } = require("../src/github");
 const assert = require("chai").assert;
 require("dotenv").config();
 
@@ -50,6 +50,7 @@ describe("github", () => {
         owner: "kota65535",
         repo: "github-terraform-plan-slack-action",
       },
+      ref: "main",
     });
     assert.isNotNull(files);
     assert.isArray(files);
@@ -64,6 +65,6 @@ describe("github", () => {
       },
       workflow: "Test",
     });
-    assert.deepEqual(numActions, [1, 1, 5, 1, 1, 1, 1, 1]);
+    assert.deepEqual(numActions, [1, 1, 6, 1, 1, 1, 1, 1]);
   });
 });

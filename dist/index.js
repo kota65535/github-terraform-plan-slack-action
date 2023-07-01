@@ -15645,7 +15645,7 @@ function wrappy (fn, cb) {
 const { getOctokit } = __nccwpck_require__(5438);
 const axios = __nccwpck_require__(6545);
 const yaml = __nccwpck_require__(4083);
-const path = __nccwpck_require__(1017);
+const npath = __nccwpck_require__(1017);
 
 let octokit;
 
@@ -15728,17 +15728,21 @@ const getContent = async (path, context) => {
     owner: context.repo.owner,
     repo: context.repo.repo,
     path,
+    ref: context.ref,
   });
   let ret;
   if (Array.isArray(fileOrDir.data)) {
     const files = await Promise.all(
-      fileOrDir.data.map((d) =>
-        octokit.rest.repos.getContent({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          path: d.path,
-        })
-      )
+      fileOrDir.data
+        .filter((d) => d.type === "file")
+        .map((d) =>
+          octokit.rest.repos.getContent({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            path: d.path,
+            ref: context.ref,
+          })
+        )
     );
     ret = files.map((f) => f.data);
     ret.forEach((r) => {
@@ -15756,7 +15760,7 @@ const getNumActionsOfStepsRecursive = async (step, context) => {
   if (step.uses) {
     // handle local composite actions
     if (step.uses.startsWith("./.github/actions")) {
-      const actionDir = await getContent(path.normalize(step.uses), context);
+      const actionDir = await getContent(npath.normalize(step.uses), context);
       if (!Array.isArray(actionDir)) {
         return ret;
       }
@@ -15838,28 +15842,24 @@ const getPlanStepUrl = async (jobName, stepName, context, offset) => {
 
 module.exports = {
   initOctokit,
-  getStepLogs,
-  getPlanStepUrl,
-  getNumActionsOfSteps,
   getWorkflow,
   getJob,
   getContent,
+  getNumActionsOfSteps,
+  getStepLogs,
+  getPlanStepUrl,
 };
 
 
 /***/ }),
 
-/***/ 1713:
+/***/ 6:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(2186);
-const { context } = __nccwpck_require__(5438);
-const parse = __nccwpck_require__(1809);
-const { sendByBotToken, sendByWebhookUrl } = __nccwpck_require__(9393);
-const { getStepLogs, getPlanStepUrl, initOctokit } = __nccwpck_require__(8396);
-const createMessage = __nccwpck_require__(7480);
+const { initOctokit } = __nccwpck_require__(8396);
 
-const main = async () => {
+const getInputs = () => {
   const jobName = core.getInput("plan-job", { required: true });
   const stepName = core.getInput("plan-step", { required: true });
   const workspace = core.getInput("workspace");
@@ -15881,20 +15881,55 @@ const main = async () => {
   }
 
   initOctokit(githubToken);
+  return {
+    jobName,
+    stepName,
+    workspace,
+    githubToken,
+    channel,
+    slackBotToken,
+    slackWebhookUrl
+  };
+};
 
-  const input = await getStepLogs(jobName, stepName, context);
+module.exports = {
+  getInputs,
+};
 
-  const result = parse(input);
 
-  const planUrl = await getPlanStepUrl(jobName, stepName, context, result.summary.offset);
+/***/ }),
 
-  const message = createMessage(result, workspace, planUrl);
+/***/ 1713:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-  if (slackBotToken) {
-    await sendByBotToken(slackBotToken, channel, message);
+const core = __nccwpck_require__(2186);
+const { context } = __nccwpck_require__(5438);
+const parse = __nccwpck_require__(1809);
+const { sendByBotToken, sendByWebhookUrl } = __nccwpck_require__(9393);
+const { getStepLogs, getPlanStepUrl } = __nccwpck_require__(8396);
+const createMessage = __nccwpck_require__(7480);
+const { getInputs } = __nccwpck_require__(6);
+const { logJson } = __nccwpck_require__(6254);
+
+const main = async () => {
+  const inputs = getInputs();
+  logJson("inputs", inputs);
+
+  const lines = await getStepLogs(inputs.jobName, inputs.stepName, context);
+  core.info(`Found ${lines.length} lines of logs`);
+
+  const result = parse(lines);
+  logJson("Parsed logs", result);
+
+  const planUrl = await getPlanStepUrl(inputs.jobName, inputs.stepName, context, result.summary.offset);
+
+  const message = createMessage(result, inputs.workspace, planUrl);
+
+  if (inputs.slackBotToken) {
+    await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
   }
-  if (slackWebhookUrl) {
-    await sendByWebhookUrl(slackWebhookUrl, message);
+  if (inputs.slackWebhookUrl) {
+    await sendByWebhookUrl(inputs.slackWebhookUrl, message);
   }
 
   core.setOutput("outside", JSON.stringify(result.outside));
@@ -16222,7 +16257,19 @@ module.exports = createMessage;
 /***/ }),
 
 /***/ 6254:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(2186);
+
+function toJson(obj) {
+  return JSON.stringify(obj, null, 2);
+}
+
+function logJson(message, obj) {
+  core.startGroup(message);
+  core.info(toJson(obj));
+  core.endGroup();
+}
 
 const findLine = (lines, pattern) => {
   for (let i = 0; i < lines.length; i++) {
@@ -16328,6 +16375,7 @@ const anyMatch = (patterns, line) => {
 };
 
 module.exports = {
+  logJson,
   findLine,
   findLinesBetween,
   findSections,
@@ -24944,8 +24992,11 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(2186);
+const { context } = __nccwpck_require__(5438);
 const main = __nccwpck_require__(1713);
+const { logJson } = __nccwpck_require__(6254);
 
+logJson("context", context);
 try {
   main();
 } catch (error) {

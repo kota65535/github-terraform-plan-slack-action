@@ -4,6 +4,7 @@ const main = require("./main");
 const { logJson } = require("../src/util");
 
 logJson("context", context);
+logJson("env", process.env);
 try {
   main();
 } catch (error) {

@@ -35,9 +35,9 @@ outputs:
   summary:
     description: "Summary section"
   should-apply:
-    description: "true if apply is needed, otherwise false."
+    description: "true if apply is needed, otherwise false"
   should-refresh:
-    description: "true if refresh is needed, otherwise false."
+    description: "true if refresh is needed, otherwise false"
 runs:
   using: "node16"
   main: "dist/index.js"

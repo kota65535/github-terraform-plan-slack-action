@@ -34,6 +34,7 @@ const main = async () => {
   core.setOutput("warning", JSON.stringify(result.warning));
   core.setOutput("summary", JSON.stringify(result.summary));
   core.setOutput("should-apply", result.shouldApply);
+  core.setOutput("should-refresh", result.shouldRefresh);
 };
 
 module.exports = main;

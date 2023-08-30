@@ -22,6 +22,13 @@ GitHub Action for sending terraform plan result to a Slack channel.
 
 1. Need to specify `channel` and `slack-bot-token` both or `slack-webhook-url`.
 
+## Outputs
+
+| Name             | Description                                                |
+|------------------|------------------------------------------------------------|
+| `should-apply`   | `true` if `terraform apply` is needed, otherwise `false`   |
+| `should-refresh` | `true` if `terraform refresh` is needed, otherwise `false` |
+
 ## Usage
 
 Use this action after the job where you run `terraform plan`.

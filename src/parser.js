@@ -123,11 +123,13 @@ const parse = (rawLines) => {
   const summary = getSummarySection(lines);
 
   const shouldApply = summary.add > 0 || summary.change > 0 || summary.destroy > 0 || output.sections.length > 0;
+  let shouldRefresh = false;
 
   // Handle empty summary string when we have output changes but no resource changes
   if (summary.str === "" && output.sections.length > 0) {
     summary.offset = output.offset;
     summary.str = `Output Changes: ${output.sections.length}`;
+    shouldRefresh = true;
   }
 
   return {
@@ -137,6 +139,7 @@ const parse = (rawLines) => {
     warning,
     summary,
     shouldApply,
+    shouldRefresh,
   };
 };
 

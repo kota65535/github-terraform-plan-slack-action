@@ -24,10 +24,10 @@ GitHub Action for sending terraform plan result to a Slack channel.
 
 ## Outputs
 
-| Name             | Description                                                | Required | Default |
-|------------------|------------------------------------------------------------|----------|---------|
-| `should-apply`   | `true` if `terraform apply` is needed, otherwise `false`   | Yes      | N/A     |
-| `should-refresh` | `true` if `terraform refresh` is needed, otherwise `false` | Yes      | N/A     |
+| Name             | Description                                                |
+|------------------|------------------------------------------------------------|
+| `should-apply`   | `true` if `terraform apply` is needed, otherwise `false`   |
+| `should-refresh` | `true` if `terraform refresh` is needed, otherwise `false` |
 
 ## Usage
 

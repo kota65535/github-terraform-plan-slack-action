@@ -14,7 +14,7 @@ const getResourceActionSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(
     inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/
+    /^Plan:/,
   );
 
   const patterns = {
@@ -113,14 +113,20 @@ const getSummarySection = (inputLines) => {
   }
 };
 
-const parse = (rawLines) => {
+const parse = (rawLines, summaryOnly = false) => {
   const lines = rawLines.map(stripAnsi);
+  
+  const summary = getSummarySection(lines);
+  if (summaryOnly) {
+    return {
+      summary
+    } 
+  }
 
   const outside = getOutsideChangeSection(lines);
   const action = getResourceActionSection(lines);
   const output = getOutputChangeSection(lines);
   const warning = getWarningSection(lines);
-  const summary = getSummarySection(lines);
 
   let shouldApply = false;
   let shouldRefresh = false;

@@ -32,7 +32,7 @@ const getInputs = () => {
     githubToken,
     channel,
     slackBotToken,
-    slackWebhookUrl
+    slackWebhookUrl,
   };
 };
 

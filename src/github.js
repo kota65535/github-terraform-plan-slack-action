@@ -1,7 +1,5 @@
 const { getOctokit } = require("@actions/github");
 const axios = require("axios");
-const yaml = require("yaml");
-const npath = require("path");
 
 let octokit;
 

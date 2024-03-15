@@ -15723,7 +15723,7 @@ const getJobLogs = async (job, context) => {
   return res2.data.replace(/\r/g, "").split("\n");
 };
 
-const getContent = async (path, context) => {
+const getContent = async (path, context, pattern) => {
   const fileOrDir = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -15734,7 +15734,7 @@ const getContent = async (path, context) => {
   if (Array.isArray(fileOrDir.data)) {
     const files = await Promise.all(
       fileOrDir.data
-        .filter((d) => d.type === "file")
+        .filter((d) => d.type === "file" && (pattern ? d.name.match(pattern) : true))
         .map((d) =>
           octokit.rest.repos.getContent({
             owner: context.repo.owner,
@@ -15755,50 +15755,9 @@ const getContent = async (path, context) => {
   return ret;
 };
 
-const getNumActionsOfStepsRecursive = async (step, context) => {
-  let ret = 1;
-  if (step.uses) {
-    // handle local composite actions
-    if (step.uses.startsWith("./.github/actions")) {
-      const actionDir = await getContent(npath.normalize(step.uses), context);
-      if (!Array.isArray(actionDir)) {
-        return ret;
-      }
-      const actionFile = actionDir.find((d) => d.name.match(/action.ya?ml/));
-      const actionYaml = yaml.parse(actionFile.content);
-      for (const s of actionYaml.runs.steps) {
-        ret += await getNumActionsOfStepsRecursive(s, context);
-      }
-    }
-    // TODO: handle remote composite actions
-  }
-  return ret;
-};
-
-const getNumActionsOfSteps = async (jobName, context) => {
-  const workflow = await getWorkflow(context);
-  const workflowFile = await getContent(workflow.path, context);
-  if (Array.isArray(workflowFile)) {
-    throw new Error("workflow should be a file");
-  }
-  const workflowYaml = yaml.parse(workflowFile.content);
-  const steps = workflowYaml.jobs[jobName].steps;
-  const numActions = [1];
-  for (const s of steps) {
-    numActions.push(await getNumActionsOfStepsRecursive(s, context));
-  }
-  return numActions;
-};
-
-const getStepLogs = async (jobName, stepName, context) => {
+const getStepLogs = async (jobName, context) => {
   const job = await getJob(jobName, context);
-  const step = job.steps.find((s) => s.name === stepName);
-  if (!step) {
-    throw new Error(`failed to get step with name: ${stepName}`);
-  }
-
   const logs = await getJobLogs(job, context);
-  const numStepActions = await getNumActionsOfSteps(jobName, context);
 
   const startPattern =
     process.env.RUNNER_DEBUG === "1" ? /^##\[debug\]Evaluating condition for step: / : /^##\[group\]Run /;
@@ -15806,35 +15765,27 @@ const getStepLogs = async (jobName, stepName, context) => {
   // divide logs by each step
   const stepsLogs = [];
   let lines = [];
-  let curStep = 0;
   for (const l of logs) {
-    // trim ISO8601 date string
-    const m1 = l.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z) (.*)$/);
-    if (!m1) {
-      continue;
+    let body = "";
+    if (l) {
+      [, body] = l.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z (.*)$/);
     }
-    const body = m1[2];
-    // each step begins with this pattern for now
-    const m2 = body.match(startPattern);
-    if (m2) {
-      numStepActions[curStep] -= 1;
-      if (numStepActions[curStep] === 0) {
+    if (body.match(startPattern)) {
+      if (lines.length > 0) {
         stepsLogs.push(lines);
-        lines = [body];
-        curStep += 1;
-      } else {
-        lines.push(body);
+        lines = [];
       }
+      lines.push(body);
     } else {
       lines.push(body);
     }
   }
   stepsLogs.push(lines);
 
-  return stepsLogs[step.number - 1];
+  return stepsLogs;
 };
 
-const getPlanStepUrl = async (jobName, stepName, context, offset) => {
+const getStepUrl = async (jobName, stepName, context, offset) => {
   const job = await getJob(jobName, context);
   const step = job.steps.find((s) => s.name === stepName);
   if (!step) {
@@ -15848,9 +15799,8 @@ module.exports = {
   getWorkflow,
   getJob,
   getContent,
-  getNumActionsOfSteps,
   getStepLogs,
-  getPlanStepUrl,
+  getStepUrl,
 };
 
 
@@ -15865,6 +15815,7 @@ const { initOctokit } = __nccwpck_require__(8396);
 const getInputs = () => {
   const jobName = core.getInput("plan-job", { required: true });
   const stepName = core.getInput("plan-step", { required: true });
+  const index = Number(core.getInput("plan-index"));
   const workspace = core.getInput("workspace");
   let githubToken = core.getInput("github-token");
   const defaultGithubToken = core.getInput("default-github-token");
@@ -15887,6 +15838,7 @@ const getInputs = () => {
   return {
     jobName,
     stepName,
+    index,
     workspace,
     githubToken,
     channel,
@@ -15908,25 +15860,42 @@ module.exports = {
 const core = __nccwpck_require__(2186);
 const { context } = __nccwpck_require__(5438);
 const parse = __nccwpck_require__(1809);
+const { getStepLogs, getStepUrl } = __nccwpck_require__(8396);
 const { sendByBotToken, sendByWebhookUrl } = __nccwpck_require__(9393);
-const { getStepLogs, getPlanStepUrl } = __nccwpck_require__(8396);
 const createMessage = __nccwpck_require__(7480);
 const { getInputs } = __nccwpck_require__(6);
 const { logJson } = __nccwpck_require__(6254);
+
+const getPlanStepLogs = async (jobName, index, context) => {
+  const stepLogs = await getStepLogs(jobName, context);
+  let curIndex = 0;
+  for (const lines of stepLogs) {
+    const parsed = parse(lines, true);
+    if (parsed.summary.offset >= 0) {
+      if (curIndex === index) {
+        return lines;
+      }
+      curIndex++;
+    }
+  }
+  throw new Error(
+      "Terraform Plan output not found. This may be due to the format change of the recent Terraform version",
+  );
+};
 
 const main = async () => {
   const inputs = getInputs();
   logJson("inputs", inputs);
 
-  const lines = await getStepLogs(inputs.jobName, inputs.stepName, context);
-  core.info(`Found ${lines.length} lines of logs`);
+  const lines = await getPlanStepLogs(inputs.jobName, inputs.index, context);
+  logJson(`${lines.length} lines of logs found`, lines);
 
-  const result = parse(lines);
-  logJson("Parsed logs", result);
+  const parsed = parse(lines);
+  logJson("Parsed logs", parsed);
 
-  const planUrl = await getPlanStepUrl(inputs.jobName, inputs.stepName, context, result.summary.offset);
+  const planUrl = await getStepUrl(inputs.jobName, inputs.stepName, context, parsed.summary.offset);
 
-  const message = createMessage(result, inputs.workspace, planUrl);
+  const message = createMessage(parsed, inputs.workspace, planUrl);
 
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
@@ -15935,16 +15904,19 @@ const main = async () => {
     await sendByWebhookUrl(inputs.slackWebhookUrl, message);
   }
 
-  core.setOutput("outside", JSON.stringify(result.outside));
-  core.setOutput("action", JSON.stringify(result.action));
-  core.setOutput("output", JSON.stringify(result.output));
-  core.setOutput("warning", JSON.stringify(result.warning));
-  core.setOutput("summary", JSON.stringify(result.summary));
-  core.setOutput("should-apply", result.shouldApply);
-  core.setOutput("should-refresh", result.shouldRefresh);
+  core.setOutput("outside", JSON.stringify(parsed.outside));
+  core.setOutput("action", JSON.stringify(parsed.action));
+  core.setOutput("output", JSON.stringify(parsed.output));
+  core.setOutput("warning", JSON.stringify(parsed.warning));
+  core.setOutput("summary", JSON.stringify(parsed.summary));
+  core.setOutput("should-apply", parsed.shouldApply);
+  core.setOutput("should-refresh", parsed.shouldRefresh);
 };
 
-module.exports = main;
+module.exports = {
+  main,
+  getPlanStepLogs,
+};
 
 
 /***/ }),
@@ -15968,7 +15940,7 @@ const getResourceActionSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(
     inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/
+    /^Plan:/,
   );
 
   const patterns = {
@@ -16067,14 +16039,20 @@ const getSummarySection = (inputLines) => {
   }
 };
 
-const parse = (rawLines) => {
+const parse = (rawLines, summaryOnly = false) => {
   const lines = rawLines.map(stripAnsi);
+  
+  const summary = getSummarySection(lines);
+  if (summaryOnly) {
+    return {
+      summary
+    } 
+  }
 
   const outside = getOutsideChangeSection(lines);
   const action = getResourceActionSection(lines);
   const output = getOutputChangeSection(lines);
   const warning = getWarningSection(lines);
-  const summary = getSummarySection(lines);
 
   let shouldApply = false;
   let shouldRefresh = false;
@@ -16214,7 +16192,7 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map((a) => a.name).join("\n");
+    let names = added.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -16222,13 +16200,13 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Add*\n\`\`\`${names}\`\`\``,
+        text: `*Add*\n${names}\n`,
       },
     });
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => a.name).join("\n");
+    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -16236,14 +16214,14 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Change*\n\`\`\`${names}\`\`\``,
+        text: `*Change*\n${names}\n`,
       },
     });
   }
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => a.name).join("\n");
+    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -16251,7 +16229,7 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Destroy*\n\`\`\`${names}\`\`\``,
+        text: `*Destroy*\n${names}\n`,
       },
     });
   }
@@ -25001,7 +24979,7 @@ var __webpack_exports__ = {};
 (() => {
 const core = __nccwpck_require__(2186);
 const { context } = __nccwpck_require__(5438);
-const main = __nccwpck_require__(1713);
+const { main } = __nccwpck_require__(1713);
 const { logJson } = __nccwpck_require__(6254);
 
 logJson("context", context);

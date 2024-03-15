@@ -53,6 +53,8 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.PERSONAL_TOKEN }}
+      - name: For testing with a remote composite action
+        uses: microsoft/action-python@0.7.2
       - name: Run terraform init
         run: terraform init
       - name: Select dev workspace
@@ -107,6 +109,7 @@ jobs:
         with:
           plan-job: plan
           plan-step: Run terraform plan for prod
+          plan-index: 1
           workspace: prod
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Assertion

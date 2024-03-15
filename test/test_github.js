@@ -1,10 +1,12 @@
-const { initOctokit, getWorkflow, getJob, getContent, getNumActionsOfSteps, getStepLogs } = require("../src/github");
+const { initOctokit, getWorkflow, getJob, getContent } = require("../src/github");
+const { getPlanStepLogs } = require("../src/main");
+const parse = require("../src/parser");
 const assert = require("chai").assert;
 require("dotenv").config();
 
 describe("github", function () {
   this.timeout(8000);
-  before(async () => {
+  before(async function () {
     const token = process.env.GITHUB_TOKEN;
     initOctokit(token);
   });
@@ -58,41 +60,69 @@ describe("github", function () {
     files.forEach((f) => assert.isString(f.content));
   });
 
-  it("get numbers of each steps", async function () {
-    const numActions = await getNumActionsOfSteps("plan", {
-      repo: {
-        owner: "kota65535",
-        repo: "github-terraform-plan-slack-action",
-      },
-      workflow: "Test",
-    });
-    assert.deepEqual(numActions, [1, 1, 6, 1, 1, 1, 1, 1]);
-  });
-
-  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/5429707815/jobs/9881735654
-  it("gets a step logs", async function () {
-    const lines = await getStepLogs("plan", "Run terraform plan for dev", {
+  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/8276189769/job/22644332135?pr=35#step:8:1
+  it("gets a step logs (1st)", async function () {
+    const lines = await getPlanStepLogs("plan", 0, {
       repo: {
         owner: "kota65535",
         repo: "github-terraform-plan-comment-action",
       },
       workflow: "Test",
-      runId: "5429707815",
+      runId: "8276189769",
     });
-    assert.equal(lines.length, 13);
+    const parsed = parse(lines);
+    assert.notEqual(parsed.warning.offset, -1);
+    assert.notEqual(parsed.summary.offset, -1);
   });
 
-  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/5433757045/jobs/9881689538
-  it("gets a step logs when debug enabled", async function () {
+  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/8276189769/job/22644332135?pr=35#step:10:1
+  it("gets a step logs (2nd)", async function () {
+    const lines = await getPlanStepLogs("plan", 1, {
+      repo: {
+        owner: "kota65535",
+        repo: "github-terraform-plan-comment-action",
+      },
+      workflow: "Test",
+      runId: "8276189769",
+    });
+    const parsed = parse(lines);
+    assert.notEqual(parsed.action.offset, -1);
+    assert.notEqual(parsed.output.offset, -1);
+    assert.notEqual(parsed.warning.offset, -1);
+    assert.notEqual(parsed.summary.offset, -1);
+  });
+
+  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/8277529775/job/22648177184?pr=35#step:8:1
+  it("gets a step logs when debug enabled (1st)", async function () {
     process.env.RUNNER_DEBUG = "1";
-    const lines = await getStepLogs("plan", "Run terraform plan for dev", {
+    const lines = await getPlanStepLogs("plan", 0, {
       repo: {
         owner: "kota65535",
         repo: "github-terraform-plan-comment-action",
       },
       workflow: "Test",
-      runId: "5433882732",
+      runId: "8277529775",
     });
-    assert.equal(lines.length, 84);
+    const parsed = parse(lines);
+    assert.notEqual(parsed.warning.offset, -1);
+    assert.notEqual(parsed.summary.offset, -1);
+  });
+
+  // https://github.com/kota65535/github-terraform-plan-comment-action/actions/runs/8277529775/job/22648177184?pr=35#step:10:1
+  it("gets a step logs when debug enabled (2nd)", async function () {
+    process.env.RUNNER_DEBUG = "1";
+    const lines = await getPlanStepLogs("plan", 1, {
+      repo: {
+        owner: "kota65535",
+        repo: "github-terraform-plan-comment-action",
+      },
+      workflow: "Test",
+      runId: "8277529775",
+    });
+    const parsed = parse(lines);
+    assert.notEqual(parsed.action.offset, -1);
+    assert.notEqual(parsed.output.offset, -1);
+    assert.notEqual(parsed.warning.offset, -1);
+    assert.notEqual(parsed.summary.offset, -1);
   });
 });

@@ -29,7 +29,7 @@ runs:
       with:
         terraform_version: ${{ steps.versions.outputs.terraform }}
     - name: Setup node (cf. https://github.com/hashicorp/setup-terraform/issues/84)
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ steps.versions.outputs.nodejs }}
     - name: Create .env file

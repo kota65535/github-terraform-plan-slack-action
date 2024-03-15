@@ -5,11 +5,14 @@ branding:
   color: "purple"
 inputs:
   plan-job:
-    description: "Job name where `terraform plan` has been run"
+    description: "Name of the job where `terraform plan` has run"
     required: true
   plan-step:
-    description: "Step name where `terraform plan` has been run"
+    description: "Name of the step where `terraform plan` has run"
     required: true
+  plan-index:
+    description: "Index number if multiple plans have run"
+    default: "0"
   workspace:
     description: "Workspace name"
   github-token:

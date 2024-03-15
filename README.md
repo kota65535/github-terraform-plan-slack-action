@@ -14,6 +14,7 @@ GitHub Action for sending terraform plan result to a Slack channel.
 |---------------------|-----------------------------------------------|----------|---------------------------------------------------------|
 | `plan-job`          | Job name where `terraform plan` has been run  | Yes      | N/A                                                     |
 | `plan-step`         | Step name where `terraform plan` has been run | Yes      | N/A                                                     |
+| `plan-index`        | Index number if multiple plans have run       | No       | 0                                                       |
 | `workspace`         | Terraform workspace name                      | No       | N/A                                                     |
 | `github-token`      | GitHub token                                  | No       | `${{ env.GITHUB_TOKEN }}` or<br/> `${{ github.token }}` | 
 | `channel`           | Slack channel name                            | No (*1)  | N/A                                                     | 

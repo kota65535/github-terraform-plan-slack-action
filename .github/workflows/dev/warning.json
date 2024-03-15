@@ -1,5 +1,5 @@
 {
-  "offset": 18,
+  "offset": 17,
   "sections": [
     {
       "str": "│ Warning: Argument is deprecated\n│ \n│   with aws_s3_bucket.test,\n│   on main.tf line 31, in resource \"aws_s3_bucket\" \"test\":\n│   31: resource \"aws_s3_bucket\" \"test\" {\n│ \n│ Use the aws_s3_bucket_versioning resource instead\n│ \n│ (and 3 more similar warnings elsewhere)\n"

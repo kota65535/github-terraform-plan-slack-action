@@ -5,12 +5,12 @@ terraform {
     key            = "github-action-test.tfstate"
   }
   required_providers {
+    // Do not upgrade this provider so that we can test warning message!
     aws = {
       source  = "hashicorp/aws"
       version = "4.67.0"
     }
   }
-  required_version = "~> 1.5.0"
 }
 
 provider "aws" {

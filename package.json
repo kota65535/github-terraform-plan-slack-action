@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "0.36.1",
-    "chai": "4.3.7",
+    "chai": "5.1.0",
     "dotenv": "16.3.1",
     "eslint": "8.43.0",
     "eslint-config-prettier": "9.1.0",

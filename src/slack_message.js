@@ -51,7 +51,7 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map((a) => a.name).join("\n");
+    let names = added.map((a) => `* \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -59,13 +59,13 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Add*\n\`\`\`${names}\`\`\``,
+        text: `*Add*\n${names}\n`,
       },
     });
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => a.name).join("\n");
+    let names = plan.action.sections.update.map((a) => `* \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -73,14 +73,14 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Change*\n\`\`\`${names}\`\`\``,
+        text: `*Change*\n${names}\n`,
       },
     });
   }
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => a.name).join("\n");
+    let names = destroyed.map((a) => `* \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -88,7 +88,7 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Destroy*\n\`\`\`${names}\`\`\``,
+        text: `*Destroy*\n${names}\n`,
       },
     });
   }

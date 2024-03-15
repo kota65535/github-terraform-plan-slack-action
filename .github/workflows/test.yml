@@ -26,7 +26,7 @@ jobs:
         working-directory: ./.github/workflows
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup tools
         uses: ./.github/actions/setup-tools
         with:
@@ -46,7 +46,7 @@ jobs:
         working-directory: ./.github/workflows
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup tools
         uses: ./.github/actions/setup-tools
         with:
@@ -74,7 +74,7 @@ jobs:
       - plan
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Notify terraform plan result to slack for dev
         uses: ./
         id: plan-dev

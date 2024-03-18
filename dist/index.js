@@ -558,7 +558,7 @@ class OidcClient {
                 .catch(error => {
                 throw new Error(`Failed to get ID Token. \n 
         Error Code : ${error.statusCode}\n 
-        Error Message: ${error.result.message}`);
+        Error Message: ${error.message}`);
             });
             const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
             if (!id_token) {
@@ -33384,10 +33384,12 @@ const getStepLogs = async (jobName, context) => {
   const stepsLogs = [];
   let lines = [];
   for (const l of logs) {
-    let body = "";
-    if (l) {
-      [, body] = l.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z (.*)$/);
+    // TODO: handle multiple lines
+    const m = l.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z (.*)$/);
+    if (!m) {
+      continue;
     }
+    const body = m[1];
     if (body.match(startPattern)) {
       if (lines.length > 0) {
         stepsLogs.push(lines);

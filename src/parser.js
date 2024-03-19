@@ -14,7 +14,7 @@ const getResourceActionSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(
     inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/
+    /^Plan:/,
   );
 
   const patterns = {

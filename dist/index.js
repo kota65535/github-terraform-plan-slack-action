@@ -33359,8 +33359,8 @@ const getContent = async (path, context, pattern) => {
             repo: context.repo.repo,
             path: d.path,
             ref: context.ref,
-          })
-        )
+          }),
+        ),
     );
     ret = files.map((f) => f.data);
     ret.forEach((r) => {
@@ -33499,7 +33499,7 @@ const getPlanStepLogs = async (jobName, index, context) => {
     }
   }
   throw new Error(
-    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version"
+    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version",
   );
 };
 
@@ -33560,7 +33560,7 @@ const getResourceActionSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(
     inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/
+    /^Plan:/,
   );
 
   const patterns = {
@@ -33759,6 +33759,8 @@ module.exports = {
 /***/ 7480:
 /***/ ((module) => {
 
+/* eslint-disable no-irregular-whitespace */
+
 const GOOD = {
   color: "#2EB886",
   icon: ":white_check_mark:",
@@ -33812,7 +33814,7 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map((a) => `• \`${a.name}\``).join("\n");
+    let names = added.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -33826,7 +33828,7 @@ const createMessage = (plan, env, planUrl) => {
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
+    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -33841,7 +33843,7 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
+    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }

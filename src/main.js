@@ -20,7 +20,7 @@ const getPlanStepLogs = async (jobName, index, context) => {
     }
   }
   throw new Error(
-    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version"
+    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version",
   );
 };
 

@@ -33359,8 +33359,8 @@ const getContent = async (path, context, pattern) => {
             repo: context.repo.repo,
             path: d.path,
             ref: context.ref,
-          })
-        )
+          }),
+        ),
     );
     ret = files.map((f) => f.data);
     ret.forEach((r) => {
@@ -33499,7 +33499,7 @@ const getPlanStepLogs = async (jobName, index, context) => {
     }
   }
   throw new Error(
-    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version"
+    "Terraform Plan output not found. This may be due to the format change of the recent Terraform version",
   );
 };
 
@@ -33560,7 +33560,7 @@ const getResourceActionSection = (inputLines) => {
   const { offset, lines } = findLinesBetween(
     inputLines,
     /^Terraform used the selected providers to generate the following execution$/,
-    /^Plan:/
+    /^Plan:/,
   );
 
   const patterns = {

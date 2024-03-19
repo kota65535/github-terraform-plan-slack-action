@@ -95,8 +95,8 @@ const getContent = async (path, context, pattern) => {
             repo: context.repo.repo,
             path: d.path,
             ref: context.ref,
-          })
-        )
+          }),
+        ),
     );
     ret = files.map((f) => f.data);
     ret.forEach((r) => {

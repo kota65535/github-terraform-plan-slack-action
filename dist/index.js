@@ -33759,6 +33759,8 @@ module.exports = {
 /***/ 7480:
 /***/ ((module) => {
 
+/* eslint-disable no-irregular-whitespace */
+
 const GOOD = {
   color: "#2EB886",
   icon: ":white_check_mark:",
@@ -33812,7 +33814,9 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.add > 0) {
     const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    let names = added.map((a) => `• \`${a.name}\``).join("\n");
+    // Use U+2007 (FIGURE SPACE) to prevent line breaks right after bullet points
+    // cf. https://unicode-explorer.com/c/2007
+    let names = added.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -33826,7 +33830,7 @@ const createMessage = (plan, env, planUrl) => {
   }
 
   if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
+    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }
@@ -33841,7 +33845,7 @@ const createMessage = (plan, env, planUrl) => {
 
   if (plan.summary.destroy > 0) {
     const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
+    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
     if (names.length > LIMIT) {
       names = `${names.substring(0, LIMIT)} ...(omitted)`;
     }

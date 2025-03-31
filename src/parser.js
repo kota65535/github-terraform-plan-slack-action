@@ -102,7 +102,7 @@ const getSummarySection = (inputLines) => {
     }
   }
   {
-    const { offset, match } = findLine(inputLines, /^No changes. Your infrastructure matches the configuration.$/);
+    const { offset, match } = findLine(inputLines, /^((No changes. Your infrastructure matches the configuration.)|(You can apply this plan to save these new output values))/);
     return {
       offset,
       add: 0,

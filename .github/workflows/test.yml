@@ -54,7 +54,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.PERSONAL_TOKEN }}
       - name: For testing with a remote composite action
-        uses: microsoft/action-python@0.7.2
+        uses: microsoft/action-python@0.7.3
       - name: Run terraform init
         run: terraform init
       - name: Select dev workspace

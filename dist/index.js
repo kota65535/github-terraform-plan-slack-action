@@ -33942,6 +33942,7 @@ const createMessage = (plan, env, planUrl) => {
   };
 
   const sections = [];
+  let text = "";
   if (plan.action.sections.create.length > 0) {
     const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
     sections.push({
@@ -33951,6 +33952,7 @@ const createMessage = (plan, env, planUrl) => {
         text: `*Create*\n${names}\n`,
       },
     });
+    text += `## Create\n${plan.action.sections.create.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.update.length > 0) {
     const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
@@ -33961,6 +33963,7 @@ const createMessage = (plan, env, planUrl) => {
         text: `*Update*\n${names}\n`,
       },
     });
+    text += `## Update\n${plan.action.sections.update.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.replace.length > 0) {
     const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
@@ -33971,6 +33974,7 @@ const createMessage = (plan, env, planUrl) => {
         text: `*Replace*\n${names}\n`,
       },
     });
+    text += `## Replace\n${plan.action.sections.replace.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.destroy.length > 0) {
     const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
@@ -33981,6 +33985,7 @@ const createMessage = (plan, env, planUrl) => {
         text: `*Destroy*\n${names}\n`,
       },
     });
+    text += `## Destroy\n${plan.action.sections.destroy.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
 
   if (JSON.stringify(ret.attachments[0]).length + JSON.stringify(sections).length > LIMIT) {
@@ -33991,12 +33996,7 @@ const createMessage = (plan, env, planUrl) => {
         text: `Plan summary is omitted due to the length limit.`,
       },
     });
-    const omitted =
-      `## Create\n${plan.action.sections.create.map((a) => a.name).join("\n")}\n\n` +
-      `## Update\n${plan.action.sections.update.map((a) => a.name).join("\n")}\n\n` +
-      `## Replace\n${plan.action.sections.replace.map((a) => a.name).join("\n")}\n\n` +
-      `## Replace\n${plan.action.sections.destroy.map((a) => a.name).join("\n")}\n`;
-    return [ret, omitted];
+    return [ret, text];
   } else {
     ret.attachments[0].blocks = ret.attachments[0].blocks.concat(sections);
     return [ret, null];

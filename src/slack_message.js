@@ -9,7 +9,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 3900;
+const LIMIT = 3800;
 
 const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
@@ -98,6 +98,7 @@ const createMessage = (plan, env, planUrl, isBot) => {
   }
 
   if (JSON.stringify(ret.attachments[0]).length + JSON.stringify(sections).length > LIMIT) {
+    // Must be less than 200 characters
     ret.attachments[0].blocks.push({
       type: "section",
       text: {

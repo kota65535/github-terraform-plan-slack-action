@@ -33481,7 +33481,7 @@ const core = __nccwpck_require__(2186);
 const { context } = __nccwpck_require__(5438);
 const parse = __nccwpck_require__(1809);
 const { getStepLogs, getStepUrl } = __nccwpck_require__(8396);
-const { sendByBotToken, sendByWebhookUrl } = __nccwpck_require__(9393);
+const { sendByBotToken, sendByWebhookUrl, uploadByBotToken } = __nccwpck_require__(9393);
 const createMessage = __nccwpck_require__(7480);
 const { getInputs } = __nccwpck_require__(6);
 const { logJson } = __nccwpck_require__(6254);
@@ -33515,10 +33515,13 @@ const main = async () => {
 
   const planUrl = await getStepUrl(inputs.jobName, inputs.stepName, context, parsed.summary.offset);
 
-  const message = createMessage(parsed, inputs.workspace, planUrl);
+  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl);
 
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
+    if (omitted) {
+      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted); 
+    }
   }
   if (inputs.slackWebhookUrl) {
     await sendByWebhookUrl(inputs.slackWebhookUrl, message);
@@ -33648,7 +33651,10 @@ const getSummarySection = (inputLines) => {
     }
   }
   {
-    const { offset, match } = findLine(inputLines, /^((No changes. Your infrastructure matches the configuration.)|(You can apply this plan to save these new output values))/);
+    const { offset, match } = findLine(
+      inputLines,
+      /^((No changes. Your infrastructure matches the configuration.)|(You can apply this plan to save these new output values))/,
+    );
     return {
       offset,
       add: 0,
@@ -33706,13 +33712,136 @@ module.exports = parse;
 
 const axios = __nccwpck_require__(8757);
 
-const SLACK_API_URL = "https://slack.com/api/chat.postMessage";
+const SLACK_API_URL_BASE = "https://slack.com/api";
+const SLACK_API_CONVERSATIONS = `${SLACK_API_URL_BASE}/conversations.list`;
+const SLACK_API_POST_MESSAGE = `${SLACK_API_URL_BASE}/chat.postMessage`;
+const SLACK_API_GET_UPLOAD_URL = `${SLACK_API_URL_BASE}/files.getUploadURLExternal`;
+const SLACK_API_COMPLETE_UPLOAD = `${SLACK_API_URL_BASE}/files.completeUploadExternal`;
+
+async function getChannelIdByName(token, channelName) {
+  if (channelName.startsWith("C")) {
+    return channelName;
+  }
+
+  let cursor = null;
+  while (true) {
+    let res;
+    try {
+      res = await axios.get(SLACK_API_CONVERSATIONS, {
+        params: {
+          exclude_archived: true,
+          limit: 1000,
+          cursor,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (e) {
+      if (e.response) {
+        throw new Error(
+          `failed to get channels of Slack: url=${SLACK_API_CONVERSATIONS}, status=${e.response.status}, data=${JSON.stringify(e.response.data)}`,
+        );
+      } else {
+        throw new Error(`failed to get channels of Slack: url=${SLACK_API_CONVERSATIONS}, no response.`);
+      }
+    }
+
+    if (!(res.status === 200 && res.data && res.data.ok)) {
+      throw new Error(
+        `failed to send to Slack: url=${SLACK_API_CONVERSATIONS}, status=${res.status}, data=${JSON.stringify(res.data)}`,
+      );
+    }
+
+    const channel = res.data.channels.find((ch) => ch.name === channelName);
+
+    if (channel) {
+      return channel.id;
+    }
+
+    cursor = res.data.response_metadata?.next_cursor;
+    if (!cursor) {
+      break;
+    }
+  }
+  return null;
+}
+
+const uploadByBotToken = async (token, channelNameOrId, message) => {
+  const channel = await getChannelIdByName(token, channelNameOrId);
+  if (!channel) {
+    throw new Error(`channel not found: ${channelNameOrId}`);
+  }
+  const bytes = Buffer.from(message);
+
+  let res;
+  try {
+    res = await axios.get(SLACK_API_GET_UPLOAD_URL, {
+      params: { filename: "plan.txt", length: bytes.length },
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (e) {
+    if (e.response) {
+      throw new Error(
+        `failed to upload to Slack: url=${SLACK_API_GET_UPLOAD_URL}, status=${e.response.status}, data=${JSON.stringify(e.response.data)}`,
+      );
+    } else {
+      throw new Error(`failed to upload to Slack: url=${SLACK_API_GET_UPLOAD_URL}, no response.`);
+    }
+  }
+  if (!(res.status === 200 && res.data && res.data.ok)) {
+    throw new Error(
+      `failed to upload to Slack: url=${SLACK_API_GET_UPLOAD_URL}, status=${res.status}, data=${JSON.stringify(res.data)}`,
+    );
+  }
+  const fileId = res.data.file_id;
+  try {
+    res = await axios.post(res.data.upload_url, bytes);
+  } catch (e) {
+    if (e.response) {
+      throw new Error(
+        `failed to send to Slack: url=${res.data.upload_url}, status=${e.response.status}, data=${JSON.stringify(e.response.data)}`,
+      );
+    } else {
+      throw new Error(`failed to send to Slack: url=${res.data.upload_url}, no response.`);
+    }
+  }
+
+  try {
+    res = await axios.post(
+      SLACK_API_COMPLETE_UPLOAD,
+      { files: [{ id: fileId }], channel_id: channel, initial_comment: "hi" },
+      {
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+  } catch (e) {
+    if (e.response) {
+      throw new Error(
+        `failed to send to Slack: url=${SLACK_API_COMPLETE_UPLOAD}, status=${e.response.status}, data=${JSON.stringify(e.response.data)}`,
+      );
+    } else {
+      throw new Error(`failed to send to Slack: url=${SLACK_API_COMPLETE_UPLOAD}, no response.`);
+    }
+  }
+  if (!(res.status === 200 && res.data && res.data.ok)) {
+    throw new Error(
+      `failed to send to Slack: url=${SLACK_API_COMPLETE_UPLOAD}, status=${res.status}, data=${JSON.stringify(res.data)}`,
+    );
+  }
+};
 
 const sendByBotToken = async (token, channel, message) => {
   message.channel = channel;
   let res;
   try {
-    res = await axios.post(SLACK_API_URL, message, {
+    res = await axios.post(SLACK_API_POST_MESSAGE, message, {
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         Authorization: `Bearer ${token}`,
@@ -33749,6 +33878,7 @@ const sendByWebhookUrl = async (url, message) => {
 };
 
 module.exports = {
+  uploadByBotToken,
   sendByBotToken,
   sendByWebhookUrl,
 };
@@ -33770,7 +33900,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 900;
+const LIMIT = 3900;
 
 const createMessage = (plan, env, planUrl) => {
   let props = GOOD;
@@ -33799,57 +33929,52 @@ const createMessage = (plan, env, planUrl) => {
               text: `${props.icon} *${plan.summary.str}*`,
             },
           },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `<${planUrl}|Click here> to see full logs.`,
+            },
+          },
         ],
       },
     ],
   };
 
-  ret.attachments[0].blocks.push({
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `<${planUrl}|Click here> to see full logs.`,
-    },
-  });
-
-  if (plan.summary.add > 0) {
-    const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    // Use U+2007 (FIGURE SPACE) to prevent line breaks right after bullet points
-    // cf. https://unicode-explorer.com/c/2007
-    let names = added.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  const sections = [];
+  if (plan.action.sections.create.length > 0) {
+    const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Add*\n${names}\n`,
+        text: `*Create*\n${names}\n`,
       },
     });
   }
-
-  if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  if (plan.action.sections.update.length > 0) {
+    const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Change*\n${names}\n`,
+        text: `*Update*\n${names}\n`,
       },
     });
   }
-
-  if (plan.summary.destroy > 0) {
-    const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  if (plan.action.sections.replace.length > 0) {
+    const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Replace*\n${names}\n`,
+      },
+    });
+  }
+  if (plan.action.sections.destroy.length > 0) {
+    const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
@@ -33858,7 +33983,24 @@ const createMessage = (plan, env, planUrl) => {
     });
   }
 
-  return ret;
+  if (JSON.stringify(ret.attachments[0]).length + JSON.stringify(sections).length > LIMIT) {
+    ret.attachments[0].blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `Plan summary is omitted due to the length limit.`,
+      },
+    });
+    const omitted =
+      `## Create\n${plan.action.sections.create.map((a) => a.name).join("\n")}\n\n` +
+      `## Update\n${plan.action.sections.update.map((a) => a.name).join("\n")}\n\n` +
+      `## Replace\n${plan.action.sections.replace.map((a) => a.name).join("\n")}\n\n` +
+      `## Replace\n${plan.action.sections.destroy.map((a) => a.name).join("\n")}\n`;
+    return [ret, omitted];
+  } else {
+    ret.attachments[0].blocks = ret.attachments[0].blocks.concat(sections);
+    return [ret, null];
+  }
 };
 
 module.exports = createMessage;

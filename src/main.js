@@ -2,7 +2,7 @@ const core = require("@actions/core");
 const { context } = require("@actions/github");
 const parse = require("./parser");
 const { getStepLogs, getStepUrl } = require("./github");
-const { sendByBotToken, sendByWebhookUrl } = require("./slack");
+const { sendByBotToken, sendByWebhookUrl, uploadByBotToken } = require("./slack");
 const createMessage = require("./slack_message");
 const { getInputs } = require("./input");
 const { logJson } = require("./util");
@@ -36,10 +36,13 @@ const main = async () => {
 
   const planUrl = await getStepUrl(inputs.jobName, inputs.stepName, context, parsed.summary.offset);
 
-  const message = createMessage(parsed, inputs.workspace, planUrl);
+  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl);
 
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
+    if (omitted) {
+      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted); 
+    }
   }
   if (inputs.slackWebhookUrl) {
     await sendByWebhookUrl(inputs.slackWebhookUrl, message);

@@ -9,7 +9,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 900;
+const LIMIT = 3900;
 
 const createMessage = (plan, env, planUrl) => {
   let props = GOOD;
@@ -38,57 +38,52 @@ const createMessage = (plan, env, planUrl) => {
               text: `${props.icon} *${plan.summary.str}*`,
             },
           },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `<${planUrl}|Click here> to see full logs.`,
+            },
+          },
         ],
       },
     ],
   };
 
-  ret.attachments[0].blocks.push({
-    type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `<${planUrl}|Click here> to see full logs.`,
-    },
-  });
-
-  if (plan.summary.add > 0) {
-    const added = plan.action.sections.create.concat(plan.action.sections.replace);
-    // Use U+2007 (FIGURE SPACE) to prevent line breaks right after bullet points
-    // cf. https://unicode-explorer.com/c/2007
-    let names = added.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  const sections = [];
+  if (plan.action.sections.create.length > 0) {
+    const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Add*\n${names}\n`,
+        text: `*Create*\n${names}\n`,
       },
     });
   }
-
-  if (plan.summary.change > 0) {
-    let names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  if (plan.action.sections.update.length > 0) {
+    const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Change*\n${names}\n`,
+        text: `*Update*\n${names}\n`,
       },
     });
   }
-
-  if (plan.summary.destroy > 0) {
-    const destroyed = plan.action.sections.destroy.concat(plan.action.sections.replace);
-    let names = destroyed.map((a) => `• \`${a.name}\``).join("\n");
-    if (names.length > LIMIT) {
-      names = `${names.substring(0, LIMIT)} ...(omitted)`;
-    }
-    ret.attachments[0].blocks.push({
+  if (plan.action.sections.replace.length > 0) {
+    const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Replace*\n${names}\n`,
+      },
+    });
+  }
+  if (plan.action.sections.destroy.length > 0) {
+    const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
+    sections.push({
       type: "section",
       text: {
         type: "mrkdwn",
@@ -97,7 +92,24 @@ const createMessage = (plan, env, planUrl) => {
     });
   }
 
-  return ret;
+  if (JSON.stringify(ret.attachments[0]).length + JSON.stringify(sections).length > LIMIT) {
+    ret.attachments[0].blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `Plan summary is omitted due to the length limit.`,
+      },
+    });
+    const omitted =
+      `## Create\n${plan.action.sections.create.map((a) => a.name).join("\n")}\n\n` +
+      `## Update\n${plan.action.sections.update.map((a) => a.name).join("\n")}\n\n` +
+      `## Replace\n${plan.action.sections.replace.map((a) => a.name).join("\n")}\n\n` +
+      `## Replace\n${plan.action.sections.destroy.map((a) => a.name).join("\n")}\n`;
+    return [ret, omitted];
+  } else {
+    ret.attachments[0].blocks = ret.attachments[0].blocks.concat(sections);
+    return [ret, null];
+  }
 };
 
 module.exports = createMessage;

@@ -36,7 +36,7 @@ const main = async () => {
 
   const planUrl = await getStepUrl(inputs.jobName, inputs.stepName, context, parsed.summary.offset);
 
-  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl);
+  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl, inputs.slackBotToken);
 
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);

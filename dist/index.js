@@ -33515,7 +33515,7 @@ const main = async () => {
 
   const planUrl = await getStepUrl(inputs.jobName, inputs.stepName, context, parsed.summary.offset);
 
-  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl);
+  const [message, omitted] = createMessage(parsed, inputs.workspace, planUrl, inputs.slackBotToken);
 
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
@@ -33777,7 +33777,7 @@ const uploadByBotToken = async (token, channelNameOrId, message) => {
   let res;
   try {
     res = await axios.get(SLACK_API_GET_UPLOAD_URL, {
-      params: { filename: "plan.txt", length: bytes.length },
+      params: { filename: "Plan summary", length: bytes.length },
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         Authorization: `Bearer ${token}`,
@@ -33902,7 +33902,7 @@ const WARNING = {
 
 const LIMIT = 1000;
 
-const createMessage = (plan, env, planUrl) => {
+const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
   if (plan.summary.destroy > 0) {
     props = WARNING;
@@ -33993,7 +33993,7 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `Plan summary is omitted due to the length limit.`,
+        text: `Plan summary is omitted due to the length limit. ${isBot ? "See the attached file below" : ""}`,
       },
     });
     return [ret, text];

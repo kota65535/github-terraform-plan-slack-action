@@ -11,7 +11,7 @@ const WARNING = {
 
 const LIMIT = 1000;
 
-const createMessage = (plan, env, planUrl) => {
+const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
   if (plan.summary.destroy > 0) {
     props = WARNING;
@@ -102,7 +102,7 @@ const createMessage = (plan, env, planUrl) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `Plan summary is omitted due to the length limit.`,
+        text: `Plan summary is omitted due to the length limit. ${isBot ? "See the attached file below" : ""}`,
       },
     });
     return [ret, text];

@@ -65,7 +65,7 @@ const uploadByBotToken = async (token, channelNameOrId, message) => {
   let res;
   try {
     res = await axios.get(SLACK_API_GET_UPLOAD_URL, {
-      params: { filename: "plan.txt", length: bytes.length },
+      params: { filename: "Plan summary", length: bytes.length },
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         Authorization: `Bearer ${token}`,

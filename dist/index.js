@@ -33900,7 +33900,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 1000;
+const LIMIT = 3900;
 
 const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
@@ -33993,7 +33993,7 @@ const createMessage = (plan, env, planUrl, isBot) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `Plan summary is omitted due to the length limit. ${isBot ? "See the attached file below." : ""}`,
+        text: `Sorry, the plan summary is omitted due to the length limit. ${isBot ? "See the attached file below." : ""}`,
       },
     });
     return [ret, text];

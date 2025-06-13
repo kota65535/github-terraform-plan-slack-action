@@ -101,7 +101,7 @@ const uploadByBotToken = async (token, channelNameOrId, message) => {
   try {
     res = await axios.post(
       SLACK_API_COMPLETE_UPLOAD,
-      { files: [{ id: fileId }], channel_id: channel, initial_comment: "hi" },
+      { files: [{ id: fileId }], channel_id: channel },
       {
         headers: {
           "Content-Type": "application/json; charset=UTF-8",

@@ -102,7 +102,7 @@ const createMessage = (plan, env, planUrl, isBot) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `Plan summary is omitted due to the length limit. ${isBot ? "See the attached file below" : ""}`,
+        text: `Plan summary is omitted due to the length limit. ${isBot ? "See the attached file below." : ""}`,
       },
     });
     return [ret, text];

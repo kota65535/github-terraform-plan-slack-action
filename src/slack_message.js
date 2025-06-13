@@ -9,7 +9,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 3900;
+const LIMIT = 1000;
 
 const createMessage = (plan, env, planUrl) => {
   let props = GOOD;

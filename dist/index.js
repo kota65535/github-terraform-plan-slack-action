@@ -33899,7 +33899,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 3000;
+const LIMIT = 2980;
 
 const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
@@ -33941,53 +33941,53 @@ const createMessage = (plan, env, planUrl, isBot) => {
   };
 
   if (plan.action.sections.create.length > 0) {
-    const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
+    const names = plan.action.sections.create.map((a) => `• \`${a.name}\``);
     const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
       ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `${i === 0 ? "*Create*\n" : ""}${chunks[i]}\n`,
+          text: `${i === 0 ? "*Create*\n" : ""}${chunks[i].join("\n")}\n`,
         },
       });
     }
   }
   if (plan.action.sections.update.length > 0) {
-    const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
+    const names = plan.action.sections.update.map((a) => `• \`${a.name}\``);
     const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
       ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `${i === 0 ? "*Update*\n" : ""}${chunks[i]}\n`,
+          text: `${i === 0 ? "*Update*\n" : ""}${chunks[i].join("\n")}\n`,
         },
       });
     }
   }
   if (plan.action.sections.replace.length > 0) {
-    const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
+    const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``);
     const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
       ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `${i === 0 ? "*Replace*\n" : ""}${chunks[i]}\n`,
+          text: `${i === 0 ? "*Replace*\n" : ""}${chunks[i].join("\n")}\n`,
         },
       });
     }
   }
   if (plan.action.sections.destroy.length > 0) {
-    const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
+    const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``);
     const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
       ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `${i === 0 ? "*Destroy*\n" : ""}${chunks[i]}\n`,
+          text: `${i === 0 ? "*Destroy*\n" : ""}${chunks[i].join("\n")}\n`,
         },
       });
     }
@@ -34134,10 +34134,12 @@ const toChunks = (strings, limit) => {
     if (currentLength + strLength > limit) {
       result.push(currentChunk);
       currentChunk = [str];
-      currentLength = strLength;
+      // +1 for new line character
+      currentLength = strLength + 1;
     } else {
       currentChunk.push(str);
-      currentLength += strLength;
+      // +1 for new line character
+      currentLength += strLength + 1;
     }
   }
 
@@ -34154,7 +34156,7 @@ module.exports = {
   findLinesBetween,
   findSections,
   anyMatch,
-  toChunks
+  toChunks,
 };
 
 

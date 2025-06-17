@@ -128,10 +128,12 @@ const toChunks = (strings, limit) => {
     if (currentLength + strLength > limit) {
       result.push(currentChunk);
       currentChunk = [str];
-      currentLength = strLength;
+      // +1 for new line character
+      currentLength = strLength + 1;
     } else {
       currentChunk.push(str);
-      currentLength += strLength;
+      // +1 for new line character
+      currentLength += strLength + 1;
     }
   }
 
@@ -148,5 +150,5 @@ module.exports = {
   findLinesBetween,
   findSections,
   anyMatch,
-  toChunks
+  toChunks,
 };

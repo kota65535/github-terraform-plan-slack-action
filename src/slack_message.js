@@ -52,13 +52,11 @@ const createMessage = (plan, env, planUrl, isBot) => {
     ],
   };
 
-  const sections = [];
-  let text = "";
   if (plan.action.sections.create.length > 0) {
     const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
-    const chunks = toChunks(names);
+    const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
-      sections.push({
+      ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
@@ -66,13 +64,12 @@ const createMessage = (plan, env, planUrl, isBot) => {
         },
       });
     }
-    text += `## Create\n${plan.action.sections.create.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.update.length > 0) {
     const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
-    const chunks = toChunks(names);
+    const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
-      sections.push({
+      ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
@@ -80,13 +77,12 @@ const createMessage = (plan, env, planUrl, isBot) => {
         },
       });
     }
-    text += `## Update\n${plan.action.sections.update.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.replace.length > 0) {
     const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
-    const chunks = toChunks(names);
+    const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
-      sections.push({
+      ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
@@ -94,13 +90,12 @@ const createMessage = (plan, env, planUrl, isBot) => {
         },
       });
     }
-    text += `## Replace\n${plan.action.sections.replace.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.destroy.length > 0) {
     const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
-    const chunks = toChunks(names);
+    const chunks = toChunks(names, LIMIT);
     for (let i = 0; i < chunks.length; i++) {
-      sections.push({
+      ret.attachments[0].blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
@@ -108,23 +103,9 @@ const createMessage = (plan, env, planUrl, isBot) => {
         },
       });
     }
-    text += `## Destroy\n${plan.action.sections.destroy.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
 
-  if (JSON.stringify(ret.attachments[0]).length + JSON.stringify(sections).length > LIMIT) {
-    // Must be less than 200 characters
-    ret.attachments[0].blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `Sorry, the plan summary is omitted due to the length limit. ${isBot ? "See the attached file below." : ""}`,
-      },
-    });
-    return [ret, text];
-  } else {
-    ret.attachments[0].blocks = ret.attachments[0].blocks.concat(sections);
-    return [ret, null];
-  }
+  return ret;
 };
 
 module.exports = createMessage;

@@ -1,5 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 
+const { toChunks } = require("./util");
+
 const GOOD = {
   color: "#2EB886",
   icon: ":white_check_mark:",
@@ -9,7 +11,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 3800;
+const LIMIT = 3000;
 
 const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
@@ -54,46 +56,58 @@ const createMessage = (plan, env, planUrl, isBot) => {
   let text = "";
   if (plan.action.sections.create.length > 0) {
     const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Create*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Create*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Create\n${plan.action.sections.create.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.update.length > 0) {
     const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Update*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Update*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Update\n${plan.action.sections.update.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.replace.length > 0) {
     const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Replace*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Replace*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Replace\n${plan.action.sections.replace.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.destroy.length > 0) {
     const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Destroy*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Destroy*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Destroy\n${plan.action.sections.destroy.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
 

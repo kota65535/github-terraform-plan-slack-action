@@ -41,7 +41,7 @@ const main = async () => {
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
     if (omitted) {
-      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted); 
+      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted);
     }
   }
   if (inputs.slackWebhookUrl) {

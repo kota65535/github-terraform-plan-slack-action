@@ -33520,7 +33520,7 @@ const main = async () => {
   if (inputs.slackBotToken) {
     await sendByBotToken(inputs.slackBotToken, inputs.channel, message);
     if (omitted) {
-      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted); 
+      await uploadByBotToken(inputs.slackBotToken, inputs.channel, omitted);
     }
   }
   if (inputs.slackWebhookUrl) {
@@ -33887,9 +33887,11 @@ module.exports = {
 /***/ }),
 
 /***/ 7480:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /* eslint-disable no-irregular-whitespace */
+
+const { toChunks } = __nccwpck_require__(6254);
 
 const GOOD = {
   color: "#2EB886",
@@ -33900,7 +33902,7 @@ const WARNING = {
   icon: ":warning:",
 };
 
-const LIMIT = 3800;
+const LIMIT = 3000;
 
 const createMessage = (plan, env, planUrl, isBot) => {
   let props = GOOD;
@@ -33945,46 +33947,58 @@ const createMessage = (plan, env, planUrl, isBot) => {
   let text = "";
   if (plan.action.sections.create.length > 0) {
     const names = plan.action.sections.create.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Create*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Create*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Create\n${plan.action.sections.create.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.update.length > 0) {
     const names = plan.action.sections.update.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Update*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Update*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Update\n${plan.action.sections.update.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.replace.length > 0) {
     const names = plan.action.sections.replace.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Replace*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Replace*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Replace\n${plan.action.sections.replace.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
   if (plan.action.sections.destroy.length > 0) {
     const names = plan.action.sections.destroy.map((a) => `• \`${a.name}\``).join("\n");
-    sections.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Destroy*\n${names}\n`,
-      },
-    });
+    const chunks = toChunks(names);
+    for (let i = 0; i < chunks.length; i++) {
+      sections.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${i === 0 ? "*Destroy*\n" : ""}${chunks[i]}\n`,
+        },
+      });
+    }
     text += `## Destroy\n${plan.action.sections.destroy.map((a) => `* ${a.name}`).join("\n")}\n\n`;
   }
 
@@ -34127,12 +34141,42 @@ const anyMatch = (patterns, line) => {
   return null;
 };
 
+const toChunks = (strings, limit) => {
+  const result = [];
+  let currentChunk = [];
+  let currentLength = 0;
+
+  for (const str of strings) {
+    const strLength = str.length;
+
+    if (strLength > limit) {
+      throw new Error(`the string length of each element must be less than ${limit}`);
+    }
+
+    if (currentLength + strLength > limit) {
+      result.push(currentChunk);
+      currentChunk = [str];
+      currentLength = strLength;
+    } else {
+      currentChunk.push(str);
+      currentLength += strLength;
+    }
+  }
+
+  if (currentChunk.length > 0) {
+    result.push(currentChunk);
+  }
+
+  return result;
+};
+
 module.exports = {
   logJson,
   findLine,
   findLinesBetween,
   findSections,
   anyMatch,
+  toChunks
 };
 
 

@@ -113,10 +113,40 @@ const anyMatch = (patterns, line) => {
   return null;
 };
 
+const toChunks = (strings, limit) => {
+  const result = [];
+  let currentChunk = [];
+  let currentLength = 0;
+
+  for (const str of strings) {
+    const strLength = str.length;
+
+    if (strLength > limit) {
+      throw new Error(`the string length of each element must be less than ${limit}`);
+    }
+
+    if (currentLength + strLength > limit) {
+      result.push(currentChunk);
+      currentChunk = [str];
+      currentLength = strLength;
+    } else {
+      currentChunk.push(str);
+      currentLength += strLength;
+    }
+  }
+
+  if (currentChunk.length > 0) {
+    result.push(currentChunk);
+  }
+
+  return result;
+};
+
 module.exports = {
   logJson,
   findLine,
   findLinesBetween,
   findSections,
   anyMatch,
+  toChunks
 };

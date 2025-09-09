@@ -33636,13 +33636,17 @@ const getWarningSection = (inputLines) => {
 
 const getSummarySection = (inputLines) => {
   {
-    const { offset, match } = findLine(inputLines, /^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$/);
+    const { offset, match } = findLine(
+      inputLines,
+      /^Plan: ((\d+) to import, )?(\d+) to add, (\d+) to change, (\d+) to destroy.$/,
+    );
     if (match) {
       return {
         offset,
-        add: parseInt(match[1]),
-        change: parseInt(match[2]),
-        destroy: parseInt(match[3]),
+        import: parseInt(match[2] || "0"),
+        add: parseInt(match[3]),
+        change: parseInt(match[4]),
+        destroy: parseInt(match[5]),
         str: match[0],
       };
     }
@@ -33654,6 +33658,7 @@ const getSummarySection = (inputLines) => {
     );
     return {
       offset,
+      import: 0,
       add: 0,
       change: 0,
       destroy: 0,
@@ -33679,7 +33684,7 @@ const parse = (rawLines, summaryOnly = false) => {
 
   let shouldApply = false;
   let shouldRefresh = false;
-  if (summary.add > 0 || summary.change > 0 || summary.destroy > 0) {
+  if (summary.import > 0 || summary.add > 0 || summary.change > 0 || summary.destroy > 0) {
     shouldApply = true;
   } else if (output.sections.length > 0) {
     shouldRefresh = true;

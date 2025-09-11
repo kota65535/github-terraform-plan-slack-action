@@ -22,22 +22,22 @@
   },
   "homepage": "https://github.com/kota65535/github-terraform-plan-slack-action#readme",
   "dependencies": {
-    "@actions/core": "1.10.1",
-    "@actions/github": "6.0.0",
-    "axios": "1.6.7",
+    "@actions/core": "1.11.1",
+    "@actions/github": "6.0.1",
+    "axios": "1.12.0",
     "strip-ansi": "6.0.1",
-    "yaml": "2.4.1"
+    "yaml": "2.8.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "0.38.1",
-    "chai": "4.4.1",
-    "dotenv": "16.4.5",
-    "eslint": "8.57.0",
-    "eslint-config-prettier": "9.1.0",
+    "@vercel/ncc": "0.38.3",
+    "chai": "4.5.0",
+    "dotenv": "16.6.1",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.2",
     "eslint-config-standard": "17.1.0",
-    "husky": "9.0.11",
-    "mocha": "10.3.0",
+    "husky": "9.1.7",
+    "mocha": "10.8.2",
     "nyc": "15.1.0",
-    "prettier": "3.2.5"
+    "prettier": "3.6.2"
   }
 }
